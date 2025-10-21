@@ -156,6 +156,98 @@ A decentralized subscription platform where users pay yearly subscriptions in Py
 - Works on desktop, tablet, mobile
 - Clean, modern UI with good UX
 
+#### 4.6 Enhanced Landing Page
+- **Hero Section:**
+  - Catchy headline: "Earn While You Subscribe" or "Subscriptions That Reward Loyalty"
+  - Subheadline explaining the concept (1-2 sentences)
+  - Dual CTAs: "Try Sandbox Demo" (primary) and "Connect Wallet" (secondary)
+  - Hero visual/animation showing the subscription flow
+  - Key stat badges: "4.5% APY", "100% Refundable", "Powered by PyUSD"
+
+- **Problem Statement:**
+  - Current subscription pain points (high churn, no loyalty rewards)
+  - Statistics about subscription churn rates
+
+- **Solution Overview:**
+  - "How It Works" 3-step visual guide:
+    1. Subscribe with PyUSD
+    2. Interest accrues automatically
+    3. Complete year = earn rewards
+  - Comparison table (Traditional vs Our Model)
+
+- **Key Features Grid:**
+  - Earn While Subscribed (4.5% APY)
+  - 100% Principal Back
+  - Multi-Provider Platform
+  - Built on Arbitrum + PyUSD
+
+- **Use Cases:**
+  - For Users: Rewarded loyalty
+  - For Businesses: Reduced churn
+  - For Ecosystem: PyUSD utility
+
+- **Live Statistics Dashboard:**
+  - Total Value Locked
+  - Active Subscriptions
+  - Total Providers
+  - Interest Distributed
+
+- **Technology Stack Display:**
+  - PyUSD and Arbitrum logos
+  - Security badges
+  - "View Contracts on Arbiscan" link
+
+- **Call to Action:**
+  - "Start as Provider" button
+  - "Browse Subscriptions" button
+  - GitHub / Documentation links
+
+#### 4.7 Sandbox Demo Mode
+Interactive testnet-based demo experience for judges and users to try the platform risk-free.
+
+**Demo Mode Options:**
+
+1. **Quick Demo (Guided) - Recommended for Judges:**
+   - Click "Try Sandbox Demo" on landing page
+   - Auto-provision burner wallet with testnet PyUSD
+   - Guided 4-step flow with UI highlights:
+     - Step 1: View pre-funded wallet (1000 testnet PyUSD)
+     - Step 2: Browse demo providers
+     - Step 3: Subscribe to a service (real testnet transaction)
+     - Step 4: View dashboard with active subscription
+   - Fast-forward functionality to simulate time passage
+   - Demonstrate both completion and cancellation scenarios
+   - Progress tracker showing current step (1/4, 2/4, etc.)
+   - Estimated time: 2 minutes
+
+2. **Full Sandbox (Free-Roam):**
+   - Connect personal testnet wallet
+   - Access to testnet PyUSD faucet
+   - Full platform exploration
+   - All features available
+   - Sandbox banner: "🎮 Testnet Mode - Not Real Money"
+
+**Sandbox UI Components:**
+- Persistent sandbox mode banner
+- Demo wallet balance display
+- Step progress indicator
+- Action highlights (next action glowing/highlighted)
+- Fast-forward time button (simulate days/months)
+- Reset button to restart demo
+- Real-time transaction viewer with Arbiscan links
+- Tooltip explanations for each action
+
+**Demo Pre-Setup:**
+- Deploy contracts to Arbitrum Sepolia testnet
+- Create 3-5 demo providers with realistic offerings:
+  - "Netflix Clone" - $180/year
+  - "Spotify Premium" - $120/year
+  - "ChatGPT Plus" - $240/year
+  - "GitHub Pro" - $84/year
+  - "Gym Membership" - $600/year
+- Faucet contract to fund demo users
+- 1-2 pre-existing subscriptions for demonstration
+
 ### 5. Wallet Integration
 
 #### 5.1 Connection
@@ -232,6 +324,45 @@ function getProviderSubscriptions(uint256 providerId) external view returns (uin
 function calculateInterest(uint256 principal) public pure returns (uint256)
 ```
 
+##### Testnet-Only Demo Functions
+```solidity
+// Only available on testnet for demo purposes
+function fastForwardTime(uint256 subscriptionId, uint256 daysToSkip) 
+    external 
+    onlyTestnet
+
+function resetSubscription(uint256 subscriptionId) 
+    external 
+    onlyOwner 
+    onlyTestnet
+
+function isTestnet() public view returns (bool)
+```
+
+**Purpose:**
+- `fastForwardTime`: Simulates time passage for demo (makes subscription appear older)
+- `resetSubscription`: Resets subscription state for repeated demos
+- `isTestnet`: Returns true if contract is on testnet, prevents deployment to mainnet with demo features
+
+**Security Note:** These functions MUST be disabled or removed before mainnet deployment
+
+#### Faucet Contract (Testnet Only)
+```solidity
+contract PyUSDFaucet {
+    IERC20 public pyusd;
+    uint256 public constant DRIP_AMOUNT = 1000 * 10**6; // 1000 PyUSD
+    
+    mapping(address => uint256) public lastDrip;
+    uint256 public constant COOLDOWN = 1 hours;
+    
+    function fundWallet(address recipient) external {
+        require(block.timestamp >= lastDrip[recipient] + COOLDOWN, "Cooldown active");
+        lastDrip[recipient] = block.timestamp;
+        pyusd.transfer(recipient, DRIP_AMOUNT);
+    }
+}
+```
+
 #### Security Requirements
 - ReentrancyGuard on all fund-moving functions
 - Access control (only subscriber can cancel their subscription)
@@ -290,13 +421,20 @@ event InterestWithdrawn(uint256 indexed providerId, address indexed provider, ui
 7. ✅ User dashboard
 8. ✅ Wallet connection (RainbowKit)
 9. ✅ Basic responsive design
+10. ✅ Enhanced landing page with hero section
+11. ✅ Sandbox demo mode (guided quick demo)
+12. ✅ Testnet demo functions (fast-forward time)
+13. ✅ PyUSD faucet contract
 
 ### Should Have (P1)
 1. Provider dashboard with analytics
 2. Search and filter in marketplace
 3. Real-time countdown timers
 4. Transaction notifications/toasts
-5. Statistics on landing page
+5. Statistics on landing page (live from blockchain)
+6. Full sandbox mode (free-roam with personal wallet)
+7. Demo wallet auto-provisioning
+8. Animated hero section
 
 ### Nice to Have (P2)
 1. Provider categories
@@ -386,34 +524,61 @@ const DEFAULT_CHAIN = arbitrum; // from wagmi/chains
 
 ---
 
-## Demo Script
+## Demo Script (Sandbox Mode)
+
+### For Judges (3-minute flow)
 
 1. **Introduction** (30s)
-   - Show landing page
-   - Explain the concept
-   - Show statistics
+   - Open landing page
+   - Explain the concept: "Subscriptions that reward loyalty with 4.5% APY"
+   - Highlight the problem: Current subscription models have 75% annual churn
+   - Point to key stats on landing page
 
-2. **Provider Registration** (30s)
-   - Connect wallet as provider
-   - Register new service
-   - Show in marketplace
+2. **Launch Sandbox Demo** (10s)
+   - Click "Try Sandbox Demo" button
+   - Auto-provision burner wallet with 1000 PyUSD
+   - Show demo mode banner and wallet balance
 
-3. **User Subscription** (45s)
-   - Connect different wallet
-   - Browse marketplace
-   - Subscribe to service
-   - Show dashboard
+3. **Browse & Subscribe** (40s)
+   - Browse pre-populated providers (Netflix Clone, Spotify Premium, etc.)
+   - Select "Spotify Premium" - $120/year
+   - Show calculation: Complete year = get $120 + $5.40 (4.5% APY) back
+   - Click "Subscribe" → Approve PyUSD → Confirm transaction
+   - Show transaction on Arbiscan (testnet)
 
-4. **Subscription Management** (45s)
-   - Show countdown timer
-   - Demonstrate cancellation (refund)
-   - Show provider receiving forfeited interest
-   - Demonstrate completed subscription claim (may need to mock time)
+4. **View Dashboard** (20s)
+   - Subscription appears in dashboard
+   - Show countdown timer (365 days remaining)
+   - Display projected reward: $5.40
 
-5. **Closing** (30s)
-   - Recap innovation
-   - Show potential impact
-   - Q&A
+5. **Demonstrate Two Paths** (60s)
+   
+   **Path A - Early Cancellation:**
+   - Click "Cancel Subscription"
+   - Confirm cancellation
+   - User receives $120 back (principal only)
+   - Provider keeps the $5.40 interest
+   - Show provider dashboard receiving forfeited interest
+   
+   **Path B - Complete Year (using fast-forward):**
+   - Subscribe to another service (GitHub Pro - $84/year)
+   - Click "Fast Forward 1 Year" (demo feature)
+   - Countdown shows "0 days remaining - Ready to claim!"
+   - Click "Claim Rewards"
+   - User receives $84 + $3.78 = $87.78 total
+   - Show success animation
+
+6. **Closing** (20s)
+   - Recap: "Users get rewarded for loyalty, providers reduce churn"
+   - Show provider analytics: Total earned from cancellations
+   - Mention: Built on Arbitrum with PyUSD
+   - Open for questions
+
+### Backup Plan (if blockchain is slow)
+- Pre-recorded video of sandbox demo (60s)
+- Show verified contracts on Arbiscan
+- Walk through code on GitHub
+- Present architecture diagrams
 
 ---
 
@@ -445,28 +610,49 @@ ethonline2025-hackathlon/
 ├── contracts/                 # Smart contracts
 │   ├── SubscriptionFactory.sol
 │   ├── SubscriptionVault.sol
+│   ├── PyUSDFaucet.sol       # Testnet faucet
 │   └── mocks/
 │       └── MockPyUSD.sol
 ├── scripts/                   # Deployment scripts
 │   ├── deploy.ts
+│   ├── setup-demo.ts         # Setup demo providers
 │   └── verify.ts
 ├── test/                      # Contract tests
 │   ├── SubscriptionFactory.test.ts
-│   └── SubscriptionVault.test.ts
+│   ├── SubscriptionVault.test.ts
+│   └── PyUSDFaucet.test.ts
 ├── frontend/                  # Next.js app
 │   ├── src/
 │   │   ├── app/              # App router
+│   │   │   ├── page.tsx     # Landing page
+│   │   │   ├── demo/        # Sandbox demo
+│   │   │   ├── marketplace/ # Browse providers
+│   │   │   ├── dashboard/   # User dashboard
+│   │   │   └── provider/    # Provider pages
 │   │   ├── components/       # React components
+│   │   │   ├── landing/     # Landing page sections
+│   │   │   ├── demo/        # Demo components
+│   │   │   ├── wallet/      # Wallet connection
+│   │   │   └── ui/          # Reusable UI
 │   │   ├── hooks/            # Custom hooks
+│   │   │   ├── useContract.ts
+│   │   │   ├── useDemoWallet.ts
+│   │   │   └── useSubscription.ts
 │   │   ├── lib/              # Utilities
+│   │   │   ├── contracts.ts  # Contract ABIs & addresses
+│   │   │   └── demo.ts       # Demo utilities
 │   │   └── config/           # Configuration
+│   │       └── wagmi.ts      # Wagmi config
 │   ├── public/               # Static assets
+│   │   ├── images/
+│   │   └── videos/
 │   └── package.json
 ├── hardhat.config.ts
 ├── package.json
 ├── pnpm-workspace.yaml
 ├── .prettierrc
 ├── .eslintrc.json
+├── REQUIREMENTS.md            # This document
 └── README.md
 ```
 
