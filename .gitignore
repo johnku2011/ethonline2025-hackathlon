@@ -52,3 +52,6 @@ Thumbs.db
 # Misc
 .turbo
 
+# Node Version Manager
+nvm/
+
