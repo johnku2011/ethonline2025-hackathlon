@@ -1,0 +1,28 @@
+# Hardhat
+cache
+artifacts
+typechain-types
+
+# Dependencies
+node_modules
+
+# Build
+dist
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+
+# Coverage
+coverage
+coverage.json
+
+# Gas reports
+gas-report.txt
+
+# Misc
+.DS_Store
+

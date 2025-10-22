@@ -1,0 +1,27 @@
+{
+  "name": "@pyusd-subscription/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Smart contracts for PyUSD Subscription Platform",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.ts",
+    "deploy:testnet": "hardhat run scripts/deploy.ts --network arbitrumSepolia",
+    "verify": "hardhat verify",
+    "clean": "hardhat clean",
+    "typechain": "hardhat typechain"
+  },
+  "keywords": [
+    "ethereum",
+    "hardhat",
+    "smart-contracts",
+    "solidity",
+    "pyusd",
+    "subscription",
+    "arbitrum"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
