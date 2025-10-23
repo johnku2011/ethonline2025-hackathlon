@@ -1,44 +1,43 @@
-import { expect } from "chai";
-import hre from "hardhat";
-import { parseUnits, getAddress } from "viem";
+import { expect } from 'chai';
+import hre from 'hardhat';
+import { parseUnits, getAddress } from 'viem';
 
-describe("SubscriptionManager", function () {
+describe('SubscriptionManager', function () {
   let fixtures: Awaited<ReturnType<typeof deployFixture>>;
 
   async function deployFixture() {
     const connection = await hre.network.connect();
-    const [owner, provider, subscriber, feeCollector] = await connection.viem.getWalletClients();
+    const [owner, provider, subscriber, feeCollector] =
+      await connection.viem.getWalletClients();
 
     // Deploy mock PyUSD token (6 decimals)
-    const mockToken = await connection.viem.deployContract("MockERC20", [
-      "PayPal USD",
-      "PYUSD",
+    const mockToken = await connection.viem.deployContract('MockERC20', [
+      'PayPal USD',
+      'PYUSD',
       6n,
     ]);
 
     // Deploy mock Morpho vault
-    const mockVault = await connection.viem.deployContract("MockMorphoVault", [
+    const mockVault = await connection.viem.deployContract('MockMorphoVault', [
       mockToken.address,
     ]);
 
     // Deploy SubscriptionManager
-    const subscriptionManager = await connection.viem.deployContract("SubscriptionManager", [
-      mockToken.address,
-      mockVault.address,
-      feeCollector.account.address,
-    ]);
+    const subscriptionManager = await connection.viem.deployContract(
+      'SubscriptionManager',
+      [mockToken.address, mockVault.address, feeCollector.account.address]
+    );
 
     const publicClient = await connection.viem.getPublicClient();
 
     // Mint tokens to subscriber (10,000 PYUSD)
-    const mintAmount = parseUnits("10000", 6);
+    const mintAmount = parseUnits('10000', 6);
     await mockToken.write.mint([subscriber.account.address, mintAmount]);
 
     // Approve subscription contract
-    await mockToken.write.approve(
-      [subscriptionManager.address, mintAmount],
-      { account: subscriber.account }
-    );
+    await mockToken.write.approve([subscriptionManager.address, mintAmount], {
+      account: subscriber.account,
+    });
 
     return {
       subscriptionManager,
@@ -56,47 +55,49 @@ describe("SubscriptionManager", function () {
     fixtures = await deployFixture();
   });
 
-  describe("Deployment", function () {
-    it("Should set the correct PyUSD token", async function () {
+  describe('Deployment', function () {
+    it('Should set the correct PyUSD token', async function () {
       const { subscriptionManager, mockToken } = fixtures;
       expect(await subscriptionManager.read.pyusdToken()).to.equal(
         getAddress(mockToken.address)
       );
     });
 
-    it("Should set the correct Morpho vault", async function () {
+    it('Should set the correct Morpho vault', async function () {
       const { subscriptionManager, mockVault } = fixtures;
       expect(await subscriptionManager.read.morphoVault()).to.equal(
         getAddress(mockVault.address)
       );
     });
 
-    it("Should set the correct fee collector", async function () {
+    it('Should set the correct fee collector', async function () {
       const { subscriptionManager, feeCollector } = fixtures;
       expect(await subscriptionManager.read.feeCollector()).to.equal(
         getAddress(feeCollector.account.address)
       );
     });
 
-    it("Should set default platform fee to 2.5%", async function () {
+    it('Should set default platform fee to 2.5%', async function () {
       const { subscriptionManager } = fixtures;
-      expect(await subscriptionManager.read.platformFeePercent()).to.equal(250n);
+      expect(await subscriptionManager.read.platformFeePercent()).to.equal(
+        250n
+      );
     });
 
-    it("Should initialize counters to zero", async function () {
+    it('Should initialize counters to zero', async function () {
       const { subscriptionManager } = fixtures;
       expect(await subscriptionManager.read.nextPlanId()).to.equal(1n);
       expect(await subscriptionManager.read.nextSubscriptionId()).to.equal(1n);
     });
   });
 
-  describe("Plan Creation", function () {
-    it("Should create a new subscription plan", async function () {
+  describe('Plan Creation', function () {
+    it('Should create a new subscription plan', async function () {
       const { subscriptionManager, provider } = fixtures;
 
-      const yearlyPrice = parseUnits("100", 6); // 100 PYUSD/year
-      const name = "Premium Plan";
-      const description = "Access to premium features";
+      const yearlyPrice = parseUnits('100', 6); // 100 PYUSD/year
+      const name = 'Premium Plan';
+      const description = 'Access to premium features';
 
       await subscriptionManager.write.createPlan(
         [yearlyPrice, name, description],
@@ -116,4 +117,3 @@ describe("SubscriptionManager", function () {
     });
   });
 });
-

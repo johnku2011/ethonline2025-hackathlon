@@ -42,10 +42,7 @@ export function HowItWorksSection() {
         {/* Steps Grid */}
         <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
           {steps.map((step, index) => (
-            <div
-              key={index}
-              className="relative group"
-            >
+            <div key={index} className="relative group">
               {/* Connection Line (hidden on mobile) */}
               {index < steps.length - 1 && (
                 <div className="hidden md:block absolute top-16 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 opacity-30" />
@@ -111,4 +108,3 @@ export function HowItWorksSection() {
     </section>
   );
 }
-

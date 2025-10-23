@@ -9,6 +9,7 @@ Subscribe yearly with PyUSD and earn interest rewards. Complete the full year to
 ## 🛠 Tech Stack
 
 ### Frontend
+
 - **Next.js 15** - React framework with App Router
 - **TypeScript** - Type-safe development
 - **TailwindCSS** - Utility-first styling
@@ -17,17 +18,20 @@ Subscribe yearly with PyUSD and earn interest rewards. Complete the full year to
 - **Viem** - Ethereum interactions
 
 ### Smart Contracts (Coming Soon)
+
 - **Hardhat** - Development environment
 - **Solidity** - Smart contract language
 - **OpenZeppelin** - Security standards
 
 ### Blockchain
+
 - **Arbitrum Sepolia** - Testnet for demo
 - **PyUSD** - Stablecoin for payments
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - pnpm 9+
 
@@ -105,12 +109,15 @@ ethonline2025-hackathlon/
 ## 📝 Development Notes
 
 ### Commit Strategy
+
 We follow regular commits during hackathon development:
+
 - Each feature/component gets its own commit
 - Clear commit messages with conventional commits format
 - Regular pushes to maintain progress
 
 ### Code Quality
+
 - Prettier for code formatting
 - ESLint for linting
 - TypeScript for type safety
@@ -119,6 +126,7 @@ We follow regular commits during hackathon development:
 ## 🤝 Contributing
 
 This is a hackathon project. Feel free to:
+
 1. Fork the repository
 2. Create your feature branch
 3. Commit your changes
@@ -132,6 +140,7 @@ MIT License - see LICENSE file for details
 ## 🏆 Built for ETHGlobal Hackathon
 
 This project showcases:
+
 - Innovative subscription model with DeFi integration
 - PyUSD utility and adoption
 - Arbitrum Layer 2 benefits
@@ -143,4 +152,3 @@ This project showcases:
 **Team:** ETHGlobal Hackathon Participants  
 **Event:** ETHGlobal Hackathon 2025  
 **Date:** October 2025
-

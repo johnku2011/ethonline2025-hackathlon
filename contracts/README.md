@@ -14,7 +14,7 @@ Smart contracts for the PyUSD Subscription Platform on Arbitrum.
 ### Design Patterns
 
 - ✅ Factory Pattern
-- ✅ Vault Pattern  
+- ✅ Vault Pattern
 - ✅ Access Control (OpenZeppelin Ownable)
 - ✅ Reentrancy Guard
 - ✅ Pausable
@@ -59,6 +59,7 @@ pnpm verify <CONTRACT_ADDRESS> --network arbitrumSepolia
 ## 🔐 Security
 
 All contracts use OpenZeppelin security standards:
+
 - ReentrancyGuard on fund-moving functions
 - Access control with Ownable
 - Pausable for emergency stops
@@ -67,4 +68,3 @@ All contracts use OpenZeppelin security standards:
 ## 📝 License
 
 MIT
-

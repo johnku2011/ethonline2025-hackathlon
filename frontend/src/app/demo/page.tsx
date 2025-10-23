@@ -36,9 +36,7 @@ export default function DemoPage() {
               <ul className="space-y-3 text-gray-600 dark:text-gray-300">
                 <li className="flex items-start">
                   <span className="mr-2">✅</span>
-                  <span>
-                    Get a pre-funded demo wallet with testnet PyUSD
-                  </span>
+                  <span>Get a pre-funded demo wallet with testnet PyUSD</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">✅</span>
@@ -69,4 +67,3 @@ export default function DemoPage() {
     </div>
   );
 }
-

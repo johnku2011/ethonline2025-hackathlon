@@ -1,39 +1,41 @@
-import { expect } from "chai";
-import hre from "hardhat";
-import { parseUnits, getAddress } from "viem";
+import { expect } from 'chai';
+import hre from 'hardhat';
+import { parseUnits, getAddress } from 'viem';
 
-describe("PyUSDSubscription", function () {
+describe('PyUSDSubscription', function () {
   let fixtures: Awaited<ReturnType<typeof deployFixture>>;
-  let networkHelpers: Awaited<ReturnType<typeof hre.network.connect>>["networkHelpers"];
+  let networkHelpers: Awaited<
+    ReturnType<typeof hre.network.connect>
+  >['networkHelpers'];
 
   async function deployFixture() {
     const connection = await hre.network.connect();
-    const [owner, merchant, subscriber, feeCollector] = await connection.viem.getWalletClients();
+    const [owner, merchant, subscriber, feeCollector] =
+      await connection.viem.getWalletClients();
 
     // Deploy mock PyUSD token
-    const mockToken = await connection.viem.deployContract("MockERC20", [
-      "PayPal USD",
-      "PYUSD",
+    const mockToken = await connection.viem.deployContract('MockERC20', [
+      'PayPal USD',
+      'PYUSD',
       6n, // 6 decimals like real PyUSD
     ]);
 
     // Deploy subscription contract
-    const subscription = await connection.viem.deployContract("PyUSDSubscription", [
-      mockToken.address,
-      feeCollector.account.address,
-    ]);
+    const subscription = await connection.viem.deployContract(
+      'PyUSDSubscription',
+      [mockToken.address, feeCollector.account.address]
+    );
 
     const publicClient = await connection.viem.getPublicClient();
 
     // Mint tokens to subscriber
-    const mintAmount = parseUnits("10000", 6); // 10,000 PYUSD
+    const mintAmount = parseUnits('10000', 6); // 10,000 PYUSD
     await mockToken.write.mint([subscriber.account.address, mintAmount]);
 
     // Approve subscription contract
-    await mockToken.write.approve(
-      [subscription.address, mintAmount],
-      { account: subscriber.account }
-    );
+    await mockToken.write.approve([subscription.address, mintAmount], {
+      account: subscriber.account,
+    });
 
     return {
       subscription,
@@ -52,31 +54,33 @@ describe("PyUSDSubscription", function () {
     fixtures = await deployFixture();
   });
 
-  describe("Deployment", function () {
-    it("Should set the right PyUSD token", async function () {
+  describe('Deployment', function () {
+    it('Should set the right PyUSD token', async function () {
       const { subscription, mockToken } = fixtures;
-      expect(await subscription.read.pyusdToken()).to.equal(getAddress(mockToken.address));
+      expect(await subscription.read.pyusdToken()).to.equal(
+        getAddress(mockToken.address)
+      );
     });
 
-    it("Should set the right fee collector", async function () {
+    it('Should set the right fee collector', async function () {
       const { subscription, feeCollector } = fixtures;
       expect(await subscription.read.feeCollector()).to.equal(
         getAddress(feeCollector.account.address)
       );
     });
 
-    it("Should set default platform fee to 2.5%", async function () {
+    it('Should set default platform fee to 2.5%', async function () {
       const { subscription } = fixtures;
       expect(await subscription.read.platformFeePercent()).to.equal(250n);
     });
   });
 
-  describe("Plan Management", function () {
-    it("Should create a new plan", async function () {
+  describe('Plan Management', function () {
+    it('Should create a new plan', async function () {
       const { subscription, merchant } = fixtures;
 
-      const planName = "Premium Plan";
-      const amount = parseUnits("10", 6); // 10 PYUSD
+      const planName = 'Premium Plan';
+      const amount = parseUnits('10', 6); // 10 PYUSD
       const interval = 30n * 24n * 60n * 60n; // 30 days
 
       const hash = await subscription.write.createPlan(
@@ -92,32 +96,31 @@ describe("PyUSDSubscription", function () {
       expect(plan[5]).to.equal(getAddress(merchant.account.address)); // merchant
     });
 
-    it("Should revert when creating plan with empty name", async function () {
+    it('Should revert when creating plan with empty name', async function () {
       const { subscription, merchant } = fixtures;
 
       await expect(
         subscription.write.createPlan(
-          ["", parseUnits("10", 6), 30n * 24n * 60n * 60n],
+          ['', parseUnits('10', 6), 30n * 24n * 60n * 60n],
           { account: merchant.account }
         )
-      ).to.be.rejectedWith("Plan name cannot be empty");
+      ).to.be.rejectedWith('Plan name cannot be empty');
     });
 
-    it("Should update plan by owner", async function () {
+    it('Should update plan by owner', async function () {
       const { subscription, merchant } = fixtures;
 
       await subscription.write.createPlan(
-        ["Basic Plan", parseUnits("5", 6), 30n * 24n * 60n * 60n],
+        ['Basic Plan', parseUnits('5', 6), 30n * 24n * 60n * 60n],
         { account: merchant.account }
       );
 
-      const newName = "Updated Plan";
-      const newAmount = parseUnits("15", 6);
+      const newName = 'Updated Plan';
+      const newAmount = parseUnits('15', 6);
 
-      await subscription.write.updatePlan(
-        [1n, newName, newAmount, true],
-        { account: merchant.account }
-      );
+      await subscription.write.updatePlan([1n, newName, newAmount, true], {
+        account: merchant.account,
+      });
 
       const plan = await subscription.read.plans([1n]);
       expect(plan[1]).to.equal(newName);
@@ -125,14 +128,13 @@ describe("PyUSDSubscription", function () {
     });
   });
 
-  describe("Subscriptions", function () {
-    it("Should subscribe to a plan", async function () {
-      const { subscription, merchant, subscriber, mockToken } =
-        fixtures;
+  describe('Subscriptions', function () {
+    it('Should subscribe to a plan', async function () {
+      const { subscription, merchant, subscriber, mockToken } = fixtures;
 
-      const amount = parseUnits("10", 6);
+      const amount = parseUnits('10', 6);
       await subscription.write.createPlan(
-        ["Premium Plan", amount, 30n * 24n * 60n * 60n],
+        ['Premium Plan', amount, 30n * 24n * 60n * 60n],
         { account: merchant.account }
       );
 
@@ -153,17 +155,16 @@ describe("PyUSDSubscription", function () {
       expect(balanceBefore - balanceAfter).to.equal(amount);
     });
 
-    it("Should process recurring payment", async function () {
+    it('Should process recurring payment', async function () {
       const { subscription, merchant, subscriber, mockToken, publicClient } =
         fixtures;
 
-      const amount = parseUnits("10", 6);
+      const amount = parseUnits('10', 6);
       const interval = 30n * 24n * 60n * 60n;
 
-      await subscription.write.createPlan(
-        ["Premium Plan", amount, interval],
-        { account: merchant.account }
-      );
+      await subscription.write.createPlan(['Premium Plan', amount, interval], {
+        account: merchant.account,
+      });
 
       await subscription.write.subscribe([1n], { account: subscriber.account });
 
@@ -182,13 +183,12 @@ describe("PyUSDSubscription", function () {
       expect(balanceBefore - balanceAfter).to.equal(amount);
     });
 
-    it("Should cancel subscription", async function () {
-      const { subscription, merchant, subscriber } = await loadFixture(
-        deployFixture
-      );
+    it('Should cancel subscription', async function () {
+      const { subscription, merchant, subscriber } =
+        await loadFixture(deployFixture);
 
       await subscription.write.createPlan(
-        ["Premium Plan", parseUnits("10", 6), 30n * 24n * 60n * 60n],
+        ['Premium Plan', parseUnits('10', 6), 30n * 24n * 60n * 60n],
         { account: merchant.account }
       );
 
@@ -203,8 +203,8 @@ describe("PyUSDSubscription", function () {
     });
   });
 
-  describe("Fee Management", function () {
-    it("Should update platform fee by owner", async function () {
+  describe('Fee Management', function () {
+    it('Should update platform fee by owner', async function () {
       const { subscription, owner } = fixtures;
 
       await subscription.write.updatePlatformFee([500n], {
@@ -214,13 +214,14 @@ describe("PyUSDSubscription", function () {
       expect(await subscription.read.platformFeePercent()).to.equal(500n);
     });
 
-    it("Should not allow fee above 10%", async function () {
+    it('Should not allow fee above 10%', async function () {
       const { subscription, owner } = fixtures;
 
       await expect(
-        subscription.write.updatePlatformFee([1001n], { account: owner.account })
-      ).to.be.rejectedWith("Fee cannot exceed 10%");
+        subscription.write.updatePlatformFee([1001n], {
+          account: owner.account,
+        })
+      ).to.be.rejectedWith('Fee cannot exceed 10%');
     });
   });
 });
-
