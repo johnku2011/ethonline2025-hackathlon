@@ -112,4 +112,87 @@ describe('SubscriptionManager', function () {
       );
     });
   });
+
+  describe('Monthly Subscriptions', function () {
+    beforeEach(async function () {
+      const { subscriptionManager, owner } = fixtures;
+      // Create a plan first
+      await subscriptionManager.write.createSubscriptionPlan(
+        [parseUnits('10', 6), parseUnits('100', 6), 'Monthly Plan'],
+        { account: owner.account }
+      );
+    });
+
+    it('Should subscribe monthly without staking', async function () {
+      const { subscriptionManager, user1, pyusd } = fixtures;
+
+      const balanceBefore = await pyusd.read.balanceOf([user1.account.address]);
+
+      await subscriptionManager.write.subscribeMonthly([1n, true, false], {
+        account: user1.account,
+      });
+
+      const sub = await subscriptionManager.read.subscriptions([
+        user1.account.address,
+        1n,
+      ]);
+      expect(sub[1]).to.equal(1n); // status = ACTIVE
+      expect(sub[7]).to.equal(true); // autoPayEnabled
+
+      const balanceAfter = await pyusd.read.balanceOf([user1.account.address]);
+      expect(balanceBefore - balanceAfter).to.equal(parseUnits('10', 6));
+    });
+
+    it('Should subscribe monthly with yearly staking', async function () {
+      const { subscriptionManager, user1, pyusd } = fixtures;
+
+      const balanceBefore = await pyusd.read.balanceOf([user1.account.address]);
+
+      await subscriptionManager.write.subscribeMonthly([1n, true, true], {
+        account: user1.account,
+      });
+
+      const sub = await subscriptionManager.read.subscriptions([
+        user1.account.address,
+        1n,
+      ]);
+      expect(sub[1]).to.equal(1n); // status = ACTIVE
+      expect(sub[8]).to.equal(parseUnits('100', 6)); // stakedAmount
+      expect(sub[9]).to.be.greaterThan(0n); // morphoShares
+
+      const balanceAfter = await pyusd.read.balanceOf([user1.account.address]);
+      expect(balanceBefore - balanceAfter).to.equal(parseUnits('100', 6));
+    });
+  });
+
+  describe('Yearly Subscriptions', function () {
+    beforeEach(async function () {
+      const { subscriptionManager, owner } = fixtures;
+      await subscriptionManager.write.createSubscriptionPlan(
+        [parseUnits('10', 6), parseUnits('100', 6), 'Yearly Plan'],
+        { account: owner.account }
+      );
+    });
+
+    it('Should subscribe yearly and deposit to vault', async function () {
+      const { subscriptionManager, user1, pyusd } = fixtures;
+
+      const balanceBefore = await pyusd.read.balanceOf([user1.account.address]);
+
+      await subscriptionManager.write.subscribeYearly([1n], {
+        account: user1.account,
+      });
+
+      const sub = await subscriptionManager.read.subscriptions([
+        user1.account.address,
+        1n,
+      ]);
+      expect(sub[0]).to.equal(1n); // subType = YEARLY
+      expect(sub[1]).to.equal(1n); // status = ACTIVE
+      expect(sub[9]).to.be.greaterThan(0n); // morphoShares
+
+      const balanceAfter = await pyusd.read.balanceOf([user1.account.address]);
+      expect(balanceBefore - balanceAfter).to.equal(parseUnits('100', 6));
+    });
+  });
 }
