@@ -22,4 +22,3 @@ export function getContractAddress(
 ): `0x${string}` {
   return CONTRACT_ADDRESSES[networkId][contract] as `0x${string}`;
 }
-

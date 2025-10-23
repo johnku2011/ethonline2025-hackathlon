@@ -16,16 +16,31 @@ interface SubscriptionItemProps {
   userAddress: `0x${string}`;
 }
 
-function SubscriptionItem({ planId, chainId, userAddress }: SubscriptionItemProps) {
+function SubscriptionItem({
+  planId,
+  chainId,
+  userAddress,
+}: SubscriptionItemProps) {
   const { data: subscription } = useSubscription(chainId, userAddress, planId);
   const { data: plan } = useSubscriptionPlan(chainId, planId);
-  const { cancelSubscription, withdrawYield, isPending } = useSubscriptionManager(chainId);
+  const { cancelSubscription, withdrawYield, isPending } =
+    useSubscriptionManager(chainId);
 
   if (!subscription || !plan) return null;
 
   const [monthlyRate, yearlyRate, isActive, name] = plan;
-  const [subType, status, , , startTime, , expirationTime, , stakedAmount, morphoShares] =
-    subscription;
+  const [
+    subType,
+    status,
+    ,
+    ,
+    startTime,
+    ,
+    expirationTime,
+    ,
+    stakedAmount,
+    morphoShares,
+  ] = subscription;
 
   const isMonthly = subType === 0;
   const isActiveStatus = status === 1;
@@ -60,7 +75,9 @@ function SubscriptionItem({ planId, chainId, userAddress }: SubscriptionItemProp
         {stakedAmount > 0n && (
           <div className="flex justify-between">
             <span className="text-gray-500">Staked:</span>
-            <span className="font-medium">{formatUnits(stakedAmount, 6)} PYUSD</span>
+            <span className="font-medium">
+              {formatUnits(stakedAmount, 6)} PYUSD
+            </span>
           </div>
         )}
         <div className="flex justify-between">
@@ -97,9 +114,9 @@ function SubscriptionItem({ planId, chainId, userAddress }: SubscriptionItemProp
 
 export function UserSubscriptions() {
   const { address, chainId } = useAccount();
-  const validChainId = (chainId === 421614 || chainId === 42161 ? chainId : 421614) as
-    | 421614
-    | 42161;
+  const validChainId = (
+    chainId === 421614 || chainId === 42161 ? chainId : 421614
+  ) as 421614 | 42161;
 
   const { data: activeSubscriptions, isLoading } = useUserActiveSubscriptions(
     validChainId,
@@ -115,7 +132,11 @@ export function UserSubscriptions() {
   }
 
   if (isLoading) {
-    return <div className="text-center py-8 text-gray-500">Loading subscriptions...</div>;
+    return (
+      <div className="text-center py-8 text-gray-500">
+        Loading subscriptions...
+      </div>
+    );
   }
 
   if (!activeSubscriptions || activeSubscriptions.length === 0) {
@@ -128,7 +149,9 @@ export function UserSubscriptions() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Your Subscriptions</h3>
+      <h3 className="text-lg font-semibold text-gray-900">
+        Your Subscriptions
+      </h3>
       {activeSubscriptions.map((planId) => (
         <SubscriptionItem
           key={planId.toString()}
@@ -140,4 +163,3 @@ export function UserSubscriptions() {
     </div>
   );
 }
-

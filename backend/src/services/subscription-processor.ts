@@ -40,7 +40,10 @@ export class SubscriptionProcessor {
   /**
    * Check if a subscription needs payment processing
    */
-  async needsPayment(userAddress: `0x${string}`, planId: bigint): Promise<boolean> {
+  async needsPayment(
+    userAddress: `0x${string}`,
+    planId: bigint
+  ): Promise<boolean> {
     try {
       const subscription = await this.publicClient.readContract({
         address: this.contractAddress,
@@ -49,19 +52,23 @@ export class SubscriptionProcessor {
         args: [userAddress, planId],
       });
 
-      const [subType, status, , , , , expirationTime, autoPayEnabled] = subscription;
+      const [subType, status, , , , , expirationTime, autoPayEnabled] =
+        subscription;
 
       // Check if subscription is monthly, active, has auto-pay enabled
       const isMonthly = subType === 0;
       const isActive = status === 1;
       const now = BigInt(Math.floor(Date.now() / 1000));
-      
+
       // Payment is due if expiration is within 1 day
       const paymentDue = expirationTime - now <= BigInt(86400); // 1 day in seconds
 
       return isMonthly && isActive && autoPayEnabled && paymentDue;
     } catch (error) {
-      console.error(`Error checking subscription ${planId} for ${userAddress}:`, error);
+      console.error(
+        `Error checking subscription ${planId} for ${userAddress}:`,
+        error
+      );
       return false;
     }
   }
@@ -69,7 +76,10 @@ export class SubscriptionProcessor {
   /**
    * Process a monthly payment for a user's subscription
    */
-  async processPayment(userAddress: `0x${string}`, planId: bigint): Promise<boolean> {
+  async processPayment(
+    userAddress: `0x${string}`,
+    planId: bigint
+  ): Promise<boolean> {
     try {
       console.log(`Processing payment for user ${userAddress}, plan ${planId}`);
 
@@ -85,12 +95,19 @@ export class SubscriptionProcessor {
 
       console.log(`Payment transaction sent: ${hash}`);
 
-      const receipt = await this.publicClient.waitForTransactionReceipt({ hash });
+      const receipt = await this.publicClient.waitForTransactionReceipt({
+        hash,
+      });
 
-      console.log(`Payment processed successfully for ${userAddress}, plan ${planId}`);
+      console.log(
+        `Payment processed successfully for ${userAddress}, plan ${planId}`
+      );
       return receipt.status === 'success';
     } catch (error) {
-      console.error(`Error processing payment for ${userAddress}, plan ${planId}:`, error);
+      console.error(
+        `Error processing payment for ${userAddress}, plan ${planId}:`,
+        error
+      );
       return false;
     }
   }
@@ -98,7 +115,10 @@ export class SubscriptionProcessor {
   /**
    * Check and update subscription expiration status
    */
-  async updateExpiration(userAddress: `0x${string}`, planId: bigint): Promise<void> {
+  async updateExpiration(
+    userAddress: `0x${string}`,
+    planId: bigint
+  ): Promise<void> {
     try {
       const { request } = await this.publicClient.simulateContract({
         address: this.contractAddress,
@@ -111,14 +131,19 @@ export class SubscriptionProcessor {
       const hash = await this.walletClient.writeContract(request);
       await this.publicClient.waitForTransactionReceipt({ hash });
     } catch (error) {
-      console.error(`Error updating expiration for ${userAddress}, plan ${planId}:`, error);
+      console.error(
+        `Error updating expiration for ${userAddress}, plan ${planId}:`,
+        error
+      );
     }
   }
 
   /**
    * Listen for SubscriptionCreated events to track new subscriptions
    */
-  watchNewSubscriptions(callback: (user: `0x${string}`, planId: bigint) => void) {
+  watchNewSubscriptions(
+    callback: (user: `0x${string}`, planId: bigint) => void
+  ) {
     const unwatch = this.publicClient.watchContractEvent({
       address: this.contractAddress,
       abi: SUBSCRIPTION_MANAGER_ABI,
@@ -135,4 +160,3 @@ export class SubscriptionProcessor {
     return unwatch;
   }
 }
-

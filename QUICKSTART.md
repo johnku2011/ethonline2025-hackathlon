@@ -30,7 +30,7 @@ pnpm hardhat ignition deploy ignition/modules/PyUSDSubscription.ts \
 
 # Note the deployed addresses:
 # - MockPyUSD
-# - MockMorphoVault  
+# - MockMorphoVault
 # - SubscriptionManager
 ```
 
@@ -62,12 +62,13 @@ Edit `frontend/src/lib/contracts/addresses.ts`:
 
 ```typescript
 export const CONTRACT_ADDRESSES = {
-  421614: { // Arbitrum Sepolia
+  421614: {
+    // Arbitrum Sepolia
     subscriptionManager: '0xYOUR_DEPLOYED_ADDRESS',
     pyusd: '0xYOUR_PYUSD_ADDRESS',
     morphoVault: '0xYOUR_VAULT_ADDRESS',
   },
-}
+};
 ```
 
 ## 4. Start Frontend
@@ -121,7 +122,7 @@ const SubscriptionManager = await ethers.getContractFactory("SubscriptionManager
 const sm = await SubscriptionManager.attach("YOUR_ADDRESS");
 await sm.createSubscriptionPlan(
   ethers.parseUnits("9.99", 6),  // monthly rate
-  ethers.parseUnits("99", 6),    // yearly rate  
+  ethers.parseUnits("99", 6),    // yearly rate
   "Basic Plan"
 );
 ```
@@ -158,6 +159,7 @@ await pyusd.mint(
 ### Contract Compilation Errors
 
 If you see Node.js version errors:
+
 ```bash
 # Use Node.js 22+
 nvm use 22
@@ -191,4 +193,3 @@ nvm use 22
 - Check Arbitrum Sepolia block explorer for transaction details
 
 Happy Hacking! 🚀
-

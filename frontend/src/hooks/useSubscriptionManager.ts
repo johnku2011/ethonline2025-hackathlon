@@ -1,4 +1,8 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import {
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
 import { parseUnits } from 'viem';
 import {
   SUBSCRIPTION_MANAGER_ABI,
@@ -8,12 +12,17 @@ import {
 } from '@/lib/contracts';
 
 export function useSubscriptionManager(chainId: NetworkId) {
-  const subscriptionManagerAddress = getContractAddress(chainId, 'subscriptionManager');
+  const subscriptionManagerAddress = getContractAddress(
+    chainId,
+    'subscriptionManager'
+  );
   const pyusdAddress = getContractAddress(chainId, 'pyusd');
 
   // Write operations
   const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+  });
 
   // Approve PyUSD spending
   const approvePyUSD = async (amount: bigint) => {
@@ -88,7 +97,10 @@ export function useSubscription(
   userAddress?: `0x${string}`,
   planId?: bigint
 ) {
-  const subscriptionManagerAddress = getContractAddress(chainId, 'subscriptionManager');
+  const subscriptionManagerAddress = getContractAddress(
+    chainId,
+    'subscriptionManager'
+  );
 
   return useReadContract({
     address: subscriptionManagerAddress,
@@ -106,7 +118,10 @@ export function useUserActiveSubscriptions(
   chainId: NetworkId,
   userAddress?: `0x${string}`
 ) {
-  const subscriptionManagerAddress = getContractAddress(chainId, 'subscriptionManager');
+  const subscriptionManagerAddress = getContractAddress(
+    chainId,
+    'subscriptionManager'
+  );
 
   return useReadContract({
     address: subscriptionManagerAddress,
@@ -121,7 +136,10 @@ export function useUserActiveSubscriptions(
 
 // Read subscription plan details
 export function useSubscriptionPlan(chainId: NetworkId, planId?: bigint) {
-  const subscriptionManagerAddress = getContractAddress(chainId, 'subscriptionManager');
+  const subscriptionManagerAddress = getContractAddress(
+    chainId,
+    'subscriptionManager'
+  );
 
   return useReadContract({
     address: subscriptionManagerAddress,
@@ -133,4 +151,3 @@ export function useSubscriptionPlan(chainId: NetworkId, planId?: bigint) {
     },
   });
 }
-

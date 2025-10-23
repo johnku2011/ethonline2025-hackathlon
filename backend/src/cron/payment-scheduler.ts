@@ -39,39 +39,41 @@ export class PaymentScheduler {
   async checkAllSubscriptions() {
     console.log(`Checking ${this.activeSubscriptions.size} subscriptions...`);
 
-    const promises = Array.from(this.activeSubscriptions.values()).map(async (sub) => {
-      try {
-        // Check if payment is needed
-        const needsPayment = await this.processor.needsPayment(
-          sub.userAddress,
-          sub.planId
-        );
-
-        if (needsPayment) {
-          console.log(
-            `Payment needed for ${sub.userAddress}, plan ${sub.planId}`
-          );
-          const success = await this.processor.processPayment(
+    const promises = Array.from(this.activeSubscriptions.values()).map(
+      async (sub) => {
+        try {
+          // Check if payment is needed
+          const needsPayment = await this.processor.needsPayment(
             sub.userAddress,
             sub.planId
           );
 
-          if (!success) {
-            console.error(
-              `Failed to process payment for ${sub.userAddress}, plan ${sub.planId}`
+          if (needsPayment) {
+            console.log(
+              `Payment needed for ${sub.userAddress}, plan ${sub.planId}`
             );
-          }
-        }
+            const success = await this.processor.processPayment(
+              sub.userAddress,
+              sub.planId
+            );
 
-        // Always update expiration status
-        await this.processor.updateExpiration(sub.userAddress, sub.planId);
-      } catch (error) {
-        console.error(
-          `Error processing subscription ${sub.userAddress}-${sub.planId}:`,
-          error
-        );
+            if (!success) {
+              console.error(
+                `Failed to process payment for ${sub.userAddress}, plan ${sub.planId}`
+              );
+            }
+          }
+
+          // Always update expiration status
+          await this.processor.updateExpiration(sub.userAddress, sub.planId);
+        } catch (error) {
+          console.error(
+            `Error processing subscription ${sub.userAddress}-${sub.planId}:`,
+            error
+          );
+        }
       }
-    });
+    );
 
     await Promise.all(promises);
   }
@@ -115,4 +117,3 @@ export class PaymentScheduler {
     return this.activeSubscriptions.size;
   }
 }
-

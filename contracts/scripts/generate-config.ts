@@ -3,10 +3,10 @@ import { join } from 'path';
 
 /**
  * Configuration Generator for Frontend
- * 
+ *
  * This script automates the process of syncing deployed contract addresses
  * and ABIs to the Next.js frontend after each deployment.
- * 
+ *
  * Design Pattern: Template Method Pattern
  * - Defines the skeleton of the configuration generation algorithm
  * - Allows subclasses (different networks) to override specific steps
@@ -25,26 +25,31 @@ interface DeploymentInfo {
  */
 function readDeploymentAddresses(network: string): DeploymentInfo | null {
   const deploymentPath = join(__dirname, '..', 'ignition', 'deployments');
-  
+
   if (!existsSync(deploymentPath)) {
     console.warn('⚠️  No deployments found. Run deployment first.');
     return null;
   }
 
   // Find the latest deployment folder for the network
-  const deploymentFile = join(deploymentPath, `chain-${network}`, 'deployed_addresses.json');
-  
+  const deploymentFile = join(
+    deploymentPath,
+    `chain-${network}`,
+    'deployed_addresses.json'
+  );
+
   if (!existsSync(deploymentFile)) {
     console.warn(`⚠️  No deployment found for network: ${network}`);
     return null;
   }
 
   const addresses = JSON.parse(readFileSync(deploymentFile, 'utf-8'));
-  
+
   return {
     chainId: network,
     contracts: {
-      SubscriptionManager: addresses['SubscriptionManagerModule#SubscriptionManager'] || '',
+      SubscriptionManager:
+        addresses['SubscriptionManagerModule#SubscriptionManager'] || '',
       MockMorphoVault: addresses['MockMorphoVaultModule#MockMorphoVault'] || '',
     },
   };
@@ -53,7 +58,10 @@ function readDeploymentAddresses(network: string): DeploymentInfo | null {
 /**
  * Generate TypeScript configuration file for frontend
  */
-function generateAddressesConfig(deployment: DeploymentInfo, outputDir: string) {
+function generateAddressesConfig(
+  deployment: DeploymentInfo,
+  outputDir: string
+) {
   const content = `/**
  * Auto-generated contract addresses
  * Generated at: ${new Date().toISOString()}
@@ -79,9 +87,16 @@ export const CHAIN_ID = '${deployment.chainId}' as const;
  */
 function generateABIsConfig(outputDir: string) {
   const artifactsPath = join(__dirname, '..', 'artifacts', 'contracts');
-  
+
   const subscriptionManagerABI = JSON.parse(
-    readFileSync(join(artifactsPath, 'SubscriptionManager.sol', 'SubscriptionManager.json'), 'utf-8')
+    readFileSync(
+      join(
+        artifactsPath,
+        'SubscriptionManager.sol',
+        'SubscriptionManager.json'
+      ),
+      'utf-8'
+    )
   ).abi;
 
   const content = `/**
@@ -131,4 +146,3 @@ main().catch((error) => {
   console.error('❌ Error:', error);
   process.exit(1);
 });
-

@@ -3,6 +3,7 @@
 ## 🎯 Project Overview
 
 A complete decentralized subscription management platform built for ETH Global Hackathon, featuring:
+
 - **Smart Contracts**: Solidity-based subscription management with PyUSD payments and Morpho vault yield generation
 - **Frontend**: Next.js 15 with TypeScript, RainbowKit, and Wagmi for Web3 integration
 - **Backend**: Automated payment processing service with Viem
@@ -43,6 +44,7 @@ ETHGlobal-Online-2025-Hackathlon/
 ## 🔑 Key Features
 
 ### Smart Contracts (335 lines)
+
 - ✅ **Two Subscription Models**:
   - Monthly: Pay-as-you-go with optional yearly staking
   - Yearly: Upfront payment with yield generation
@@ -53,6 +55,7 @@ ETHGlobal-Online-2025-Hackathlon/
 - ✅ **Security**: ReentrancyGuard, Pausable, Ownable patterns
 
 ### Frontend (500+ lines)
+
 - ✅ **RainbowKit Integration**: Easy wallet connection
 - ✅ **Subscription Cards**: Display plans with pricing
 - ✅ **Active Subscriptions**: View and manage user subscriptions
@@ -61,6 +64,7 @@ ETHGlobal-Online-2025-Hackathlon/
 - ✅ **Responsive Design**: Tailwind CSS styling
 
 ### Backend (349 lines)
+
 - ✅ **Automated Processing**: Check subscriptions every hour
 - ✅ **Event Listening**: Track new subscriptions on-chain
 - ✅ **Payment Execution**: Call `processMonthlyPayment` automatically
@@ -70,6 +74,7 @@ ETHGlobal-Online-2025-Hackathlon/
 ## 🏗️ Architecture Decisions
 
 ### Design Patterns Used
+
 1. **Factory Pattern**: Subscription plan creation
 2. **Observer Pattern**: Event-driven backend monitoring
 3. **Strategy Pattern**: Different subscription types (Monthly/Yearly)
@@ -78,18 +83,21 @@ ETHGlobal-Online-2025-Hackathlon/
 ### Why These Technologies?
 
 #### Contracts
+
 - **Hardhat 3.0**: Modern dev environment with Ignition deployment
 - **Solidity 0.8.28**: Latest version with built-in checks
 - **OpenZeppelin**: Battle-tested security libraries
 - **Morpho Integration**: Real yield generation capability
 
 #### Frontend
+
 - **Next.js 15**: Latest features with App Router
 - **Wagmi v2**: Type-safe Ethereum interactions
 - **RainbowKit**: Best-in-class wallet UX
 - **Viem**: Fast, lightweight alternative to ethers.js
 
 #### Backend
+
 - **Viem**: Consistent with frontend, excellent TypeScript support
 - **No framework**: Lightweight, focused service
 - **Event-driven**: Efficient monitoring with minimal RPC calls
@@ -97,11 +105,13 @@ ETHGlobal-Online-2025-Hackathlon/
 ## 📊 Business Model
 
 ### Monthly Subscriptions
+
 - Users can pay monthly with auto-pay enabled
 - **Optional Staking**: Pay year upfront, earn yield, deduct monthly
 - **Benefits**: Flexibility + yield earning opportunity
 
-### Yearly Subscriptions  
+### Yearly Subscriptions
+
 - Full year payment upfront (discounted price)
 - All funds go to Morpho vault
 - Business can withdraw funds anytime
@@ -150,6 +160,7 @@ pnpm dev
 ## 📈 Key Metrics
 
 ### Code Statistics
+
 - **Smart Contracts**: 335 lines (3 contracts)
 - **Frontend**: 500+ lines (React components + hooks)
 - **Backend**: 349 lines (TypeScript service)
@@ -157,6 +168,7 @@ pnpm dev
 - **Total**: ~1,400 lines of production code
 
 ### Commits
+
 - All code committed in small, focused commits (<100 lines each)
 - Total commits: 15+
 - Each commit represents a complete feature or fix
@@ -164,6 +176,7 @@ pnpm dev
 ## 🔐 Security Considerations
 
 ### Contracts
+
 - ✅ ReentrancyGuard on all state-changing functions
 - ✅ Pausable for emergency stops
 - ✅ Ownable for admin functions
@@ -171,12 +184,14 @@ pnpm dev
 - ✅ Proper access control (onlyOwner, onlyBackend)
 
 ### Backend
+
 - ✅ Private key in environment variables only
 - ✅ Error handling and retry logic
 - ✅ Secure RPC connection
 - ✅ Read-only operations for checking state
 
 ### Frontend
+
 - ✅ User-initiated transactions only
 - ✅ Wallet signature required for all actions
 - ✅ Type-safe contract interactions
@@ -185,6 +200,7 @@ pnpm dev
 ## 🎓 Learning & Best Practices
 
 ### What Went Well
+
 1. **Modular Architecture**: Clear separation of concerns
 2. **Type Safety**: TypeScript throughout reduces bugs
 3. **Testing**: Comprehensive test coverage for contracts
@@ -192,12 +208,14 @@ pnpm dev
 5. **Industry Standards**: Following Solidity style guide, React best practices
 
 ### Design Pattern Applications
+
 - **Factory Pattern**: Clean plan creation with `createSubscriptionPlan`
 - **Observer Pattern**: Event-driven backend with `watchNewSubscriptions`
 - **Strategy Pattern**: Different payment strategies (monthly vs yearly)
 - **State Machine**: Clear subscription lifecycle (NONE → ACTIVE → CANCELLED/EXPIRED)
 
 ### Future Enhancements
+
 1. **Database Integration**: Persist subscription state
 2. **Monitoring & Alerts**: Track payment success rates
 3. **Multi-token Support**: Beyond PyUSD
@@ -217,6 +235,7 @@ pnpm dev
 ## 🏆 Hackathon Submission
 
 This project demonstrates:
+
 - ✅ Full-stack Web3 development
 - ✅ Smart contract best practices
 - ✅ Modern frontend with excellent UX
@@ -226,4 +245,3 @@ This project demonstrates:
 - ✅ Comprehensive documentation
 
 Built with ❤️ for ETH Global Online 2025 Hackathon
-

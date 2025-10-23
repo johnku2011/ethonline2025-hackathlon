@@ -21,6 +21,7 @@ pnpm deploy:testnet
 ```
 
 **What happens:**
+
 1. ✅ Hardhat Ignition deploys contracts
 2. ✅ Saves deployment state to `ignition/deployments/`
 3. ✅ Auto-generates `app/lib/contracts/addresses.ts`
@@ -58,18 +59,19 @@ git commit -m "feat: improve subscription logic"
 
 ## Why Ignition over Proxy?
 
-| Feature | Ignition | UUPS Proxy |
-|---------|----------|------------|
-| Setup Complexity | ⭐ Simple | ⭐⭐⭐⭐ Complex |
-| Redeployment Speed | ⚡ Fast | 🐌 Slow |
+| Feature            | Ignition      | UUPS Proxy        |
+| ------------------ | ------------- | ----------------- |
+| Setup Complexity   | ⭐ Simple     | ⭐⭐⭐⭐ Complex  |
+| Redeployment Speed | ⚡ Fast       | 🐌 Slow           |
 | Storage Management | ✅ No worries | ❌ Careful layout |
-| Hackathon-friendly | ✅ Yes | ❌ Overkill |
+| Hackathon-friendly | ✅ Yes        | ❌ Overkill       |
 
 See [ARCHITECTURE_DECISION.md](docs/ARCHITECTURE_DECISION.md) for detailed analysis.
 
 ## Deployed Contracts
 
 After deployment, contract addresses will be in:
+
 - `contracts/ignition/deployments/chain-421614/deployed_addresses.json`
 - `app/lib/contracts/addresses.ts` (auto-generated)
 
@@ -77,6 +79,7 @@ After deployment, contract addresses will be in:
 
 **Problem**: Deployment state mismatch  
 **Solution**: Clear and redeploy
+
 ```bash
 rm -rf contracts/ignition/deployments/chain-421614
 pnpm deploy:testnet
@@ -84,6 +87,7 @@ pnpm deploy:testnet
 
 **Problem**: Frontend config not updated  
 **Solution**: Manually run config generator
+
 ```bash
 cd contracts
 NETWORK=421614 pnpm generate-config
@@ -100,4 +104,3 @@ NETWORK=421614 pnpm generate-config
 
 **Total Setup Time**: ~5 minutes  
 **Redeployment Time**: ~2 minutes
-

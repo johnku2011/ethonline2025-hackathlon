@@ -10,15 +10,17 @@ describe('SubscriptionManager', function () {
 
   async function deployFixture() {
     const connection = await hre.network.connect();
-    const [owner, backend, user1, user2] = await connection.viem.getWalletClients();
+    const [owner, backend, user1, user2] =
+      await connection.viem.getWalletClients();
 
     // Deploy MockPyUSD (6 decimals)
     const pyusd = await connection.viem.deployContract('MockPyUSD', []);
 
     // Deploy MockMorphoVault
-    const morphoVault = await connection.viem.deployContract('MockMorphoVault', [
-      pyusd.address,
-    ]);
+    const morphoVault = await connection.viem.deployContract(
+      'MockMorphoVault',
+      [pyusd.address]
+    );
 
     // Deploy SubscriptionManager
     const subscriptionManager = await connection.viem.deployContract(
@@ -195,4 +197,4 @@ describe('SubscriptionManager', function () {
       expect(balanceBefore - balanceAfter).to.equal(parseUnits('100', 6));
     });
   });
-}
+});

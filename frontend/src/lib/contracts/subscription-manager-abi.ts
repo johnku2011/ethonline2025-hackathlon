@@ -110,4 +110,3 @@ export const SUBSCRIPTION_MANAGER_ABI = [
     ],
   },
 ] as const;
-

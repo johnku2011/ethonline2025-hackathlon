@@ -27,6 +27,7 @@ cp .env.example .env
 ```
 
 Required variables:
+
 - `SUBSCRIPTION_MANAGER_ADDRESS`: Deployed SubscriptionManager contract address
 - `BACKEND_PRIVATE_KEY`: Private key for the backend wallet (authorized in contract)
 - `RPC_URL`: Arbitrum Sepolia RPC endpoint
@@ -35,11 +36,13 @@ Required variables:
 ### 3. Run the Service
 
 Development mode (with auto-reload):
+
 ```bash
 pnpm dev
 ```
 
 Production build:
+
 ```bash
 pnpm build
 pnpm start
@@ -77,6 +80,7 @@ src/
 ## Deployment
 
 For production deployment, consider:
+
 - Running as a systemd service or in a containerized environment
 - Setting up proper logging and monitoring
 - Using a secure key management system (e.g., AWS KMS, HashiCorp Vault)
@@ -86,12 +90,13 @@ For production deployment, consider:
 ## Development
 
 Watch mode with auto-reload:
+
 ```bash
 pnpm dev
 ```
 
 Type checking:
+
 ```bash
 pnpm build
 ```
-

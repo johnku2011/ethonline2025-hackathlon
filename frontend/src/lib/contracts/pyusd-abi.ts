@@ -44,4 +44,3 @@ export const PYUSD_ABI = [
     stateMutability: 'nonpayable',
   },
 ] as const;
-

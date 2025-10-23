@@ -27,7 +27,9 @@ export function SubscriptionCard({
   const monthlyPriceFormatted = formatUnits(monthlyRate, 6);
   const yearlyPriceFormatted = formatUnits(yearlyRate, 6);
   const monthlySavings =
-    ((Number(monthlyRate) * 12 - Number(yearlyRate)) / (Number(monthlyRate) * 12)) * 100;
+    ((Number(monthlyRate) * 12 - Number(yearlyRate)) /
+      (Number(monthlyRate) * 12)) *
+    100;
 
   return (
     <div className="rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -44,7 +46,8 @@ export function SubscriptionCard({
         <div className="flex items-baseline justify-between">
           <div>
             <p className="text-2xl font-bold text-gray-900">
-              {monthlyPriceFormatted} <span className="text-sm font-normal">PYUSD</span>
+              {monthlyPriceFormatted}{' '}
+              <span className="text-sm font-normal">PYUSD</span>
             </p>
             <p className="text-sm text-gray-500">per month</p>
           </div>
@@ -61,7 +64,8 @@ export function SubscriptionCard({
           <div className="flex items-baseline justify-between">
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {yearlyPriceFormatted} <span className="text-sm font-normal">PYUSD</span>
+                {yearlyPriceFormatted}{' '}
+                <span className="text-sm font-normal">PYUSD</span>
               </p>
               <p className="text-sm text-gray-500">per year</p>
               {monthlySavings > 0 && (
@@ -90,4 +94,3 @@ export function SubscriptionCard({
     </div>
   );
 }
-

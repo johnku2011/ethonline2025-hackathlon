@@ -9,9 +9,11 @@ async function main() {
   console.log('Starting PyUSD Subscription Backend Service...');
 
   // Validate environment variables
-  const contractAddress = process.env.SUBSCRIPTION_MANAGER_ADDRESS as `0x${string}`;
+  const contractAddress = process.env
+    .SUBSCRIPTION_MANAGER_ADDRESS as `0x${string}`;
   const backendPrivateKey = process.env.BACKEND_PRIVATE_KEY as `0x${string}`;
-  const rpcUrl = process.env.RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc';
+  const rpcUrl =
+    process.env.RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc';
 
   if (!contractAddress || !backendPrivateKey) {
     console.error('Missing required environment variables:');
@@ -41,7 +43,9 @@ async function main() {
   scheduler.start(checkIntervalMs);
 
   console.log('Backend service started successfully!');
-  console.log(`Checking subscriptions every ${checkIntervalMs / 1000 / 60} minutes`);
+  console.log(
+    `Checking subscriptions every ${checkIntervalMs / 1000 / 60} minutes`
+  );
 
   // Handle graceful shutdown
   process.on('SIGINT', () => {
@@ -61,4 +65,3 @@ main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-

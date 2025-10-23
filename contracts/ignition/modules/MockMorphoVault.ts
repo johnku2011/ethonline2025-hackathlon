@@ -3,7 +3,7 @@ import { parseUnits } from 'viem';
 
 /**
  * Hardhat Ignition module for deploying MockMorphoVault
- * 
+ *
  * This module demonstrates the Builder Pattern through Ignition's buildModule API.
  * It defines the deployment configuration in a declarative way.
  */
@@ -22,4 +22,3 @@ const MockMorphoVaultModule = buildModule('MockMorphoVaultModule', (m) => {
 });
 
 export default MockMorphoVaultModule;
-
