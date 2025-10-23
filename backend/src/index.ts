@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { SubscriptionProcessor } from './services/subscription-processor';
 import { PaymentScheduler } from './cron/payment-scheduler';
+import { getNetworkConfig } from './config/networks';
 
 // Load environment variables
 dotenv.config();
@@ -8,12 +9,16 @@ dotenv.config();
 async function main() {
   console.log('Starting PyUSD Subscription Backend Service...');
 
+  // Get network configuration
+  const network = getNetworkConfig();
+  console.log(`Network: ${network.name} (chainId: ${network.chainId})`);
+  console.log(`RPC URL: ${network.rpcUrl}`);
+
   // Validate environment variables
   const contractAddress = process.env
     .SUBSCRIPTION_MANAGER_ADDRESS as `0x${string}`;
   const backendPrivateKey = process.env.BACKEND_PRIVATE_KEY as `0x${string}`;
-  const rpcUrl =
-    process.env.RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc';
+  const rpcUrl = network.rpcUrl;
 
   if (!contractAddress || !backendPrivateKey) {
     console.error('Missing required environment variables:');
