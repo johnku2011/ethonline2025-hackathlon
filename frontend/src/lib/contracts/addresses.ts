@@ -1,5 +1,11 @@
 // Contract addresses per network
 export const CONTRACT_ADDRESSES = {
+  // Localhost (Hardhat Node)
+  31337: {
+    subscriptionManager: '0x0000000000000000000000000000000000000000', // TODO: Update after deployment
+    pyusd: '0x0000000000000000000000000000000000000000', // TODO: Update after deployment
+    morphoVault: '0x0000000000000000000000000000000000000000', // TODO: Update after deployment
+  },
   // Arbitrum Sepolia Testnet
   421614: {
     subscriptionManager: '0x0000000000000000000000000000000000000000', // TODO: Update after deployment
