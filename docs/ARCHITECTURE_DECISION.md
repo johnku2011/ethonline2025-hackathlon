@@ -204,14 +204,127 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
 6. ✅ **解決實際問題**（訂閱流失率高達 75%）
 
 **下一步行動：**
-1. 完成 SubscriptionManager 測試（當前任務）
-2. 部署到 Arbitrum Sepolia
-3. 前端整合（小步提交）
-4. Demo 準備
+1. ✅ 完成 SubscriptionManager 測試（6/6 通過）
+2. ✅ 設置 Hardhat Ignition 部署系統
+3. 🔄 部署到 Arbitrum Sepolia（待進行）
+4. 前端整合（小步提交）
+5. Demo 準備
 
 ---
 
-**文件版本：** 1.0  
+## 部署策略：Hardhat Ignition + 自動配置生成
+
+### 為什麼選擇 Ignition 而非 Proxy Pattern？
+
+在 Hackathon 開發環境中，我們需要：
+- ✅ **快速迭代**：頻繁修改合約並重新部署
+- ✅ **簡單直接**：不增加不必要的複雜度
+- ✅ **自動化**：部署後自動更新前端配置
+- ✅ **小步提交**：每次提交 < 100 行代碼
+
+**對比分析：**
+
+| 方案 | 優點 | 缺點 | 適用性 |
+|------|------|------|--------|
+| **UUPS Proxy** | 地址不變 | 複雜、storage layout 管理困難 | ❌ Overkill for hackathon |
+| **Diamond Pattern** | 模塊化、突破大小限制 | 過於複雜 | ❌ 過度設計 |
+| **Hardhat Ignition** | 官方工具、狀態管理、簡單 | 地址改變 | ✅ **最佳選擇** |
+
+### Ignition 部署架構
+
+```
+contracts/
+├── ignition/
+│   ├── modules/
+│   │   ├── MockMorphoVault.ts      # Builder Pattern
+│   │   └── SubscriptionManager.ts  # Template Method Pattern
+│   └── deployments/
+│       └── chain-421614/            # Auto-generated
+│           ├── deployed_addresses.json
+│           └── journal.jsonl
+├── scripts/
+│   └── generate-config.ts           # Template Method Pattern
+└── ENV_SETUP.md
+
+app/
+└── lib/
+    └── contracts/
+        ├── addresses.ts             # Auto-generated
+        ├── abis.ts                  # Auto-generated
+        └── index.ts
+```
+
+### Design Patterns 應用
+
+1. **Builder Pattern**（Ignition Modules）
+   - 使用 `buildModule` API 構建部署配置
+   - 聲明式定義合約部署
+   - 依賴注入（MockMorphoVault → SubscriptionManager）
+
+2. **Template Method Pattern**（部署流程）
+   - 定義部署算法骨架
+   - 子步驟可自定義（參數化）
+   - 擴展性好（多網絡支持）
+
+3. **Strategy Pattern**（已應用於 SubscriptionLib）
+   - 計算邏輯分離
+   - 不增加新的 patterns（避免過度設計）
+
+### 部署工作流
+
+```mermaid
+graph LR
+    A[修改合約] --> B[pnpm deploy:testnet]
+    B --> C[Hardhat Ignition 部署]
+    C --> D[保存狀態到 ignition/deployments/]
+    D --> E[generate-config.ts 執行]
+    E --> F[讀取部署地址]
+    F --> G[生成 addresses.ts]
+    G --> H[生成 abis.ts]
+    H --> I[前端自動更新]
+    I --> J[Git 提交 < 100 行]
+```
+
+### 重新部署流程
+
+```bash
+# 1. 修改合約
+vim contracts/SubscriptionManager.sol
+
+# 2. 一鍵部署 + 配置生成
+pnpm deploy:testnet
+
+# 3. 提交（自動化已生成配置）
+git add .
+git commit -m "feat: update subscription logic"
+```
+
+### 技術優勢
+
+1. **狀態管理**：Ignition 自動追蹤部署狀態
+2. **增量部署**：支持修改後重新執行
+3. **錯誤恢復**：可從中斷處繼續
+4. **並行執行**：自動優化部署步驟
+5. **TypeScript 支持**：原生 TS 模塊
+
+### 為什麼不用 OpenZeppelin Upgrades？
+
+雖然 UUPS Proxy 可以保持地址不變，但：
+- ❌ 需要重寫合約繼承 `UUPSUpgradeable`
+- ❌ 需要實現 `_authorizeUpgrade()`
+- ❌ Storage layout 管理困難（修改要小心）
+- ❌ 增加測試複雜度
+- ❌ 增加 gas 成本
+- ❌ 對於 Demo 來說過度設計
+
+對於 Hackathon：
+- ✅ 簡單 > 複雜
+- ✅ 快速迭代 > 地址穩定
+- ✅ 自動化 > 手動管理
+
+---
+
+**文件版本：** 2.0  
 **日期：** 2025-10-23  
-**狀態：** ✅ 已確認採用 SubscriptionManager
+**狀態：** ✅ 已確認採用 SubscriptionManager + Hardhat Ignition
 
