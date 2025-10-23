@@ -208,4 +208,85 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
 
         emit SubscriptionCreated(msg.sender, planId, SubscriptionType.YEARLY, plan.yearlyRate, false);
     }
+
+    function processMonthlyPayment(
+        address user,
+        uint256 planId
+    ) external onlyBackend nonReentrant {
+        Subscription storage sub = subscriptions[user][planId];
+        require(sub.status == SubscriptionStatus.ACTIVE, "Not active");
+        require(sub.subType == SubscriptionType.MONTHLY, "Not monthly");
+        require(sub.autoPayEnabled, "Auto-pay disabled");
+        require(block.timestamp >= sub.expirationTime - 1 days, "Too early");
+
+        uint256 paymentAmount = sub.monthlyRate;
+
+        if (sub.stakedAmount > 0) {
+            require(sub.stakedAmount >= paymentAmount, "Insufficient stake");
+            sub.stakedAmount -= paymentAmount;
+        } else {
+            paymentToken.safeTransferFrom(user, address(this), paymentAmount);
+        }
+
+        sub.lastPayment = block.timestamp;
+        sub.expirationTime = block.timestamp + SECONDS_IN_MONTH;
+
+        emit MonthlyPaymentProcessed(user, planId, paymentAmount, block.timestamp);
+    }
+
+    function cancelSubscription(uint256 planId) external nonReentrant {
+        Subscription storage sub = subscriptions[msg.sender][planId];
+        require(sub.status == SubscriptionStatus.ACTIVE, "Not active");
+
+        sub.status = SubscriptionStatus.CANCELLED;
+        uint256 refundAmount = 0;
+
+        if (sub.subType == SubscriptionType.MONTHLY && sub.stakedAmount > 0) {
+            refundAmount = sub.stakedAmount;
+            if (sub.morphoShares > 0) {
+                uint256 assets = morphoVault.convertToAssets(sub.morphoShares);
+                morphoVault.withdraw(assets, address(this), address(this));
+                refundAmount = assets;
+            }
+            sub.stakedAmount = 0;
+            sub.morphoShares = 0;
+        } else if (sub.subType == SubscriptionType.YEARLY) {
+            uint256 remainingTime = sub.expirationTime > block.timestamp ? 
+                sub.expirationTime - block.timestamp : 0;
+            if (remainingTime > 0) {
+                uint256 totalAssets = morphoVault.convertToAssets(sub.morphoShares);
+                refundAmount = (totalAssets * remainingTime) / SECONDS_IN_YEAR;
+                
+                morphoVault.withdraw(refundAmount, address(this), address(this));
+                totalYearlyDeposits -= refundAmount;
+            }
+            sub.morphoShares = 0;
+        }
+
+        _removeFromActiveSubscriptions(msg.sender, planId);
+
+        if (refundAmount > 0) {
+            paymentToken.safeTransfer(msg.sender, refundAmount);
+        }
+
+        emit SubscriptionCancelled(msg.sender, planId, refundAmount);
+    }
+
+    function withdrawYield(uint256 planId) external nonReentrant {
+        Subscription storage sub = subscriptions[msg.sender][planId];
+        require(sub.status == SubscriptionStatus.ACTIVE, "Not active");
+        require(sub.morphoShares > 0, "No shares");
+
+        uint256 currentAssets = morphoVault.convertToAssets(sub.morphoShares);
+        require(currentAssets > sub.stakedAmount, "No yield");
+
+        uint256 yieldAmount = currentAssets - sub.stakedAmount;
+        morphoVault.withdraw(yieldAmount, address(this), address(this));
+
+        sub.morphoShares = morphoVault.balanceOf(address(this));
+
+        paymentToken.safeTransfer(msg.sender, yieldAmount);
+
+        emit YieldWithdrawn(msg.sender, planId, yieldAmount);
+    }
 }
