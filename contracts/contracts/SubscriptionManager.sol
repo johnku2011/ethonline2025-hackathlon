@@ -289,4 +289,47 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
 
         emit YieldWithdrawn(msg.sender, planId, yieldAmount);
     }
+
+    function getSubscription(address user, uint256 planId) external view returns (Subscription memory) {
+        return subscriptions[user][planId];
+    }
+
+    function getUserActiveSubscriptions(address user) external view returns (uint256[] memory) {
+        return userActiveSubscriptions[user];
+    }
+
+    function checkAndUpdateExpiration(address user, uint256 planId) external {
+        Subscription storage sub = subscriptions[user][planId];
+        if (sub.status == SubscriptionStatus.ACTIVE && block.timestamp > sub.expirationTime) {
+            sub.status = SubscriptionStatus.EXPIRED;
+            _removeFromActiveSubscriptions(user, planId);
+        }
+    }
+
+    function setBackend(address _backend) external onlyOwner {
+        backend = _backend;
+    }
+
+    function togglePlanStatus(uint256 planId) external onlyOwner {
+        subscriptionPlans[planId].isActive = !subscriptionPlans[planId].isActive;
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    function _removeFromActiveSubscriptions(address user, uint256 planId) internal {
+        uint256[] storage activeSubs = userActiveSubscriptions[user];
+        for (uint256 i = 0; i < activeSubs.length; i++) {
+            if (activeSubs[i] == planId) {
+                activeSubs[i] = activeSubs[activeSubs.length - 1];
+                activeSubs.pop();
+                break;
+            }
+        }
+    }
 }
