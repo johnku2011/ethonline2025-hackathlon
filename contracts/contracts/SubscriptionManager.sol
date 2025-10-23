@@ -6,312 +6,206 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./interfaces/IMorphoVault.sol";
-import "./libraries/SubscriptionLib.sol";
+
+interface IMorphoVault {
+    function deposit(uint256 assets, address receiver) external returns (uint256 shares);
+    function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares);
+    function balanceOf(address account) external view returns (uint256);
+    function convertToAssets(uint256 shares) external view returns (uint256);
+    function asset() external view returns (address);
+}
 
 /**
  * @title SubscriptionManager
- * @notice Subscription management with yield generation via Morpho Protocol
- * @dev Yearly subscriptions with 4.5% APY rewards, using SubscriptionLib for calculations
- * 
- * Architecture:
- * - Modular design with separate calculation library
- * - Morpho integration for yield generation
- * - Platform fee model for sustainability
+ * @notice Manage subscriptions with PyUSD and yield generation via Morpho
+ * @dev Supports monthly and yearly subscriptions with automated payments
  */
 contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
-    using SubscriptionLib for *;
 
-    // ============ Enums ============
-    
-    enum SubscriptionStatus { NONE, ACTIVE, COMPLETED, CANCELLED }
-
-    // ============ Structs ============
-    
-    struct SubscriptionPlan {
-        uint256 yearlyPrice;
-        string name;
-        string description;
-        address provider;
-        bool isActive;
-        uint256 subscriberCount;
-        uint256 totalRevenue;
-    }
+    enum SubscriptionType { MONTHLY, YEARLY }
+    enum SubscriptionStatus { NONE, ACTIVE, CANCELLED, EXPIRED }
 
     struct Subscription {
-        uint256 planId;
-        address subscriber;
-        uint256 principal;
-        uint256 projectedInterest;
-        uint256 startTime;
-        uint256 expirationTime;
+        SubscriptionType subType;
         SubscriptionStatus status;
+        uint256 monthlyRate;
+        uint256 yearlyRate;
+        uint256 startTime;
+        uint256 lastPayment;
+        uint256 expirationTime;
+        bool autoPayEnabled;
+        uint256 stakedAmount;
         uint256 morphoShares;
     }
 
-    // ============ State Variables ============
+    struct SubscriptionPlan {
+        uint256 monthlyRate;
+        uint256 yearlyRate;
+        bool isActive;
+        string name;
+    }
+
+    mapping(address => mapping(uint256 => Subscription)) public subscriptions;
+    mapping(uint256 => SubscriptionPlan) public subscriptionPlans;
+    mapping(address => uint256[]) public userActiveSubscriptions;
+    
+    uint256 public nextPlanId = 1;
+    uint256 public constant SECONDS_IN_MONTH = 30 days;
+    uint256 public constant SECONDS_IN_YEAR = 365 days;
     
     IERC20 public immutable paymentToken;
     IMorphoVault public immutable morphoVault;
     
-    uint256 public platformFeePercent = 250;
-    address public feeCollector;
-    
-    uint256 public nextPlanId = 1;
-    uint256 public nextSubscriptionId = 1;
-    
-    mapping(uint256 => SubscriptionPlan) public plans;
-    mapping(uint256 => Subscription) public subscriptions;
-    mapping(address => uint256[]) public userSubscriptions;
-    mapping(address => uint256[]) public providerPlans;
-    mapping(uint256 => uint256[]) public planSubscriptions;
+    address public backend;
+    uint256 public totalYearlyDeposits;
 
-    // ============ Events ============
+    event SubscriptionCreated(
+        address indexed user,
+        uint256 indexed planId,
+        SubscriptionType subType,
+        uint256 amount,
+        bool autoPayEnabled
+    );
     
-    event PlanCreated(uint256 indexed planId, address indexed provider, string name, uint256 yearlyPrice);
-    event PlanUpdated(uint256 indexed planId, string name, uint256 yearlyPrice, bool isActive);
-    event Subscribed(uint256 indexed subscriptionId, uint256 indexed planId, address indexed subscriber, uint256 principal, uint256 projectedInterest);
-    event SubscriptionCompleted(uint256 indexed subscriptionId, address indexed subscriber, uint256 principal, uint256 actualInterest);
-    event SubscriptionCancelled(uint256 indexed subscriptionId, address indexed subscriber, uint256 refundedPrincipal, uint256 forfeitedInterest);
-    event InterestClaimed(uint256 indexed planId, address indexed provider, uint256 amount);
-    event PlatformFeeUpdated(uint256 newFeePercent);
-    event FeeCollectorUpdated(address newFeeCollector);
+    event MonthlyPaymentProcessed(
+        address indexed user,
+        uint256 indexed planId,
+        uint256 amount,
+        uint256 timestamp
+    );
+    
+    event YearlyStakeDeposited(
+        address indexed user,
+        uint256 indexed planId,
+        uint256 amount,
+        uint256 morphoShares
+    );
+    
+    event SubscriptionCancelled(
+        address indexed user,
+        uint256 indexed planId,
+        uint256 refundAmount
+    );
+    
+    event YieldWithdrawn(
+        address indexed user,
+        uint256 indexed planId,
+        uint256 amount
+    );
 
-    // ============ Constructor ============
-    
+    modifier onlyBackend() {
+        require(msg.sender == backend, "Only backend");
+        _;
+    }
+
+    modifier validPlan(uint256 planId) {
+        require(subscriptionPlans[planId].isActive, "Invalid plan");
+        _;
+    }
+
     constructor(
         address _paymentToken,
         address _morphoVault,
-        address _feeCollector
-    ) Ownable(msg.sender) {
-        SubscriptionLib.validateAddress(_paymentToken);
-        SubscriptionLib.validateAddress(_morphoVault);
-        SubscriptionLib.validateAddress(_feeCollector);
-        
+        address _backend,
+        address _owner
+    ) Ownable(_owner) {
         paymentToken = IERC20(_paymentToken);
         morphoVault = IMorphoVault(_morphoVault);
-        feeCollector = _feeCollector;
+        backend = _backend;
         
-        require(morphoVault.asset() == _paymentToken, "Morpho vault asset mismatch");
+        require(morphoVault.asset() == _paymentToken, "Asset mismatch");
     }
 
-    // ============ Provider Functions ============
-    
-    /**
-     * @notice Create a subscription plan
-     */
-    function createPlan(
-        uint256 yearlyPrice,
-        string memory name,
-        string memory description
-    ) external whenNotPaused returns (uint256) {
-        SubscriptionLib.validatePlanParams(yearlyPrice, name, msg.sender);
+    function createSubscriptionPlan(
+        uint256 _monthlyRate,
+        uint256 _yearlyRate,
+        string memory _name
+    ) external onlyOwner returns (uint256) {
+        require(_monthlyRate > 0 && _yearlyRate > 0, "Invalid rates");
         
         uint256 planId = nextPlanId++;
-        
-        plans[planId] = SubscriptionPlan({
-            yearlyPrice: yearlyPrice,
-            name: name,
-            description: description,
-            provider: msg.sender,
+        subscriptionPlans[planId] = SubscriptionPlan({
+            monthlyRate: _monthlyRate,
+            yearlyRate: _yearlyRate,
             isActive: true,
-            subscriberCount: 0,
-            totalRevenue: 0
+            name: _name
         });
-        
-        providerPlans[msg.sender].push(planId);
-        emit PlanCreated(planId, msg.sender, name, yearlyPrice);
         
         return planId;
     }
 
-    /**
-     * @notice Update a plan
-     */
-    function updatePlan(
+    function subscribeMonthly(
         uint256 planId,
-        string memory name,
-        uint256 yearlyPrice,
-        bool isActive
-    ) external {
-        SubscriptionPlan storage plan = plans[planId];
-        require(plan.provider != address(0), "Plan does not exist");
-        require(plan.provider == msg.sender, "Only provider can update");
+        bool enableAutoPay,
+        bool stakeYearlyAmount
+    ) external validPlan(planId) nonReentrant whenNotPaused {
+        require(subscriptions[msg.sender][planId].status == SubscriptionStatus.NONE, "Already subscribed");
         
-        if (bytes(name).length > 0) plan.name = name;
-        if (yearlyPrice > 0) plan.yearlyPrice = yearlyPrice;
-        plan.isActive = isActive;
-        
-        emit PlanUpdated(planId, plan.name, plan.yearlyPrice, isActive);
-    }
+        SubscriptionPlan memory plan = subscriptionPlans[planId];
+        uint256 totalAmount = stakeYearlyAmount ? plan.yearlyRate : plan.monthlyRate;
 
-    /**
-     * @notice Claim forfeited interest from cancelled subscriptions
-     */
-    function claimProviderInterest(uint256 planId) external nonReentrant {
-        SubscriptionPlan storage plan = plans[planId];
-        require(plan.provider == msg.sender, "Only provider can claim");
-        
-        uint256[] memory subs = planSubscriptions[planId];
-        uint256 totalClaimable = 0;
-        
-        for (uint256 i = 0; i < subs.length; i++) {
-            Subscription storage sub = subscriptions[subs[i]];
-            if (sub.status == SubscriptionStatus.CANCELLED && sub.morphoShares > 0) {
-                uint256 currentValue = morphoVault.convertToAssets(sub.morphoShares);
-                totalClaimable += SubscriptionLib.calculateActualInterest(currentValue, sub.principal);
-                sub.morphoShares = 0;
-            }
+        paymentToken.safeTransferFrom(msg.sender, address(this), totalAmount);
+
+        uint256 morphoShares = 0;
+        uint256 stakedAmount = 0;
+
+        if (stakeYearlyAmount) {
+            stakedAmount = plan.yearlyRate;
+            paymentToken.safeIncreaseAllowance(address(morphoVault), stakedAmount);
+            morphoShares = morphoVault.deposit(stakedAmount, address(this));
         }
-        
-        require(totalClaimable > 0, "No interest to claim");
-        morphoVault.withdraw(totalClaimable, msg.sender, address(this));
-        
-        emit InterestClaimed(planId, msg.sender, totalClaimable);
-    }
 
-    // ============ Subscriber Functions ============
-    
-    /**
-     * @notice Subscribe to a plan
-     */
-    function subscribe(uint256 planId) external nonReentrant whenNotPaused returns (uint256) {
-        SubscriptionPlan storage plan = plans[planId];
-        require(plan.isActive, "Plan is not active");
-        SubscriptionLib.validateSubscriptionParams(msg.sender, plan.provider);
-        
-        uint256 principal = plan.yearlyPrice;
-        (uint256 platformFee, uint256 providerAmount) = SubscriptionLib.calculateFees(principal, platformFeePercent);
-        
-        // Transfer tokens
-        paymentToken.safeTransferFrom(msg.sender, feeCollector, platformFee);
-        paymentToken.safeTransferFrom(msg.sender, address(this), providerAmount);
-        
-        // Deposit to Morpho
-        paymentToken.safeIncreaseAllowance(address(morphoVault), providerAmount);
-        uint256 shares = morphoVault.deposit(providerAmount, address(this));
-        
-        // Create subscription
-        uint256 subscriptionId = nextSubscriptionId++;
-        uint256 projectedInterest = SubscriptionLib.calculateProjectedInterest(providerAmount);
-        uint256 startTime = block.timestamp;
-        
-        subscriptions[subscriptionId] = Subscription({
-            planId: planId,
-            subscriber: msg.sender,
-            principal: providerAmount,
-            projectedInterest: projectedInterest,
-            startTime: startTime,
-            expirationTime: SubscriptionLib.calculateExpiration(startTime),
+        subscriptions[msg.sender][planId] = Subscription({
+            subType: SubscriptionType.MONTHLY,
             status: SubscriptionStatus.ACTIVE,
-            morphoShares: shares
+            monthlyRate: plan.monthlyRate,
+            yearlyRate: plan.yearlyRate,
+            startTime: block.timestamp,
+            lastPayment: block.timestamp,
+            expirationTime: block.timestamp + SECONDS_IN_MONTH,
+            autoPayEnabled: enableAutoPay,
+            stakedAmount: stakedAmount,
+            morphoShares: morphoShares
         });
-        
-        userSubscriptions[msg.sender].push(subscriptionId);
-        planSubscriptions[planId].push(subscriptionId);
-        plan.subscriberCount++;
-        plan.totalRevenue += principal;
-        
-        emit Subscribed(subscriptionId, planId, msg.sender, providerAmount, projectedInterest);
-        return subscriptionId;
-    }
 
-    /**
-     * @notice Claim rewards after completing full year
-     */
-    function claimRewards(uint256 subscriptionId) external nonReentrant {
-        Subscription storage sub = subscriptions[subscriptionId];
-        require(sub.subscriber == msg.sender, "Not your subscription");
-        require(sub.status == SubscriptionStatus.ACTIVE, "Subscription not active");
-        require(SubscriptionLib.isExpired(sub.expirationTime), "Subscription not expired yet");
-        
-        sub.status = SubscriptionStatus.COMPLETED;
-        
-        uint256 totalValue = morphoVault.convertToAssets(sub.morphoShares);
-        uint256 actualInterest = SubscriptionLib.calculateActualInterest(totalValue, sub.principal);
-        
-        morphoVault.withdraw(totalValue, msg.sender, address(this));
-        sub.morphoShares = 0;
-        
-        emit SubscriptionCompleted(subscriptionId, msg.sender, sub.principal, actualInterest);
-    }
+        userActiveSubscriptions[msg.sender].push(planId);
 
-    /**
-     * @notice Cancel subscription and get principal back
-     */
-    function cancelSubscription(uint256 subscriptionId) external nonReentrant {
-        Subscription storage sub = subscriptions[subscriptionId];
-        require(sub.subscriber == msg.sender, "Not your subscription");
-        require(sub.status == SubscriptionStatus.ACTIVE, "Subscription not active");
+        emit SubscriptionCreated(msg.sender, planId, SubscriptionType.MONTHLY, totalAmount, enableAutoPay);
         
-        sub.status = SubscriptionStatus.CANCELLED;
-        
-        uint256 currentValue = morphoVault.convertToAssets(sub.morphoShares);
-        uint256 forfeitedInterest = SubscriptionLib.calculateActualInterest(currentValue, sub.principal);
-        
-        // Withdraw principal only
-        morphoVault.withdraw(sub.principal, msg.sender, address(this));
-        
-        // Keep interest for provider
-        if (forfeitedInterest > 0) {
-            paymentToken.safeIncreaseAllowance(address(morphoVault), forfeitedInterest);
-            sub.morphoShares = morphoVault.deposit(forfeitedInterest, address(this));
-        } else {
-            sub.morphoShares = 0;
+        if (stakeYearlyAmount) {
+            emit YearlyStakeDeposited(msg.sender, planId, stakedAmount, morphoShares);
         }
+    }
+
+    function subscribeYearly(
+        uint256 planId
+    ) external validPlan(planId) nonReentrant whenNotPaused {
+        require(subscriptions[msg.sender][planId].status == SubscriptionStatus.NONE, "Already subscribed");
         
-        emit SubscriptionCancelled(subscriptionId, msg.sender, sub.principal, forfeitedInterest);
-    }
+        SubscriptionPlan memory plan = subscriptionPlans[planId];
+        
+        paymentToken.safeTransferFrom(msg.sender, address(this), plan.yearlyRate);
 
-    // ============ View Functions ============
-    
-    function getSubscription(uint256 subscriptionId) external view returns (Subscription memory) {
-        return subscriptions[subscriptionId];
-    }
+        paymentToken.safeIncreaseAllowance(address(morphoVault), plan.yearlyRate);
+        uint256 morphoShares = morphoVault.deposit(plan.yearlyRate, address(this));
+        totalYearlyDeposits += plan.yearlyRate;
 
-    function getUserSubscriptions(address user) external view returns (uint256[] memory) {
-        return userSubscriptions[user];
-    }
+        subscriptions[msg.sender][planId] = Subscription({
+            subType: SubscriptionType.YEARLY,
+            status: SubscriptionStatus.ACTIVE,
+            monthlyRate: plan.monthlyRate,
+            yearlyRate: plan.yearlyRate,
+            startTime: block.timestamp,
+            lastPayment: block.timestamp,
+            expirationTime: block.timestamp + SECONDS_IN_YEAR,
+            autoPayEnabled: false,
+            stakedAmount: 0,
+            morphoShares: morphoShares
+        });
 
-    function getProviderPlans(address provider) external view returns (uint256[] memory) {
-        return providerPlans[provider];
-    }
+        userActiveSubscriptions[msg.sender].push(planId);
 
-    function getPlanSubscriptions(uint256 planId) external view returns (uint256[] memory) {
-        return planSubscriptions[planId];
-    }
-
-    function canClaimRewards(uint256 subscriptionId) external view returns (bool) {
-        Subscription memory sub = subscriptions[subscriptionId];
-        return sub.status == SubscriptionStatus.ACTIVE && SubscriptionLib.isExpired(sub.expirationTime);
-    }
-
-    function getSubscriptionValue(uint256 subscriptionId) external view returns (uint256) {
-        Subscription memory sub = subscriptions[subscriptionId];
-        if (sub.morphoShares == 0) return 0;
-        return morphoVault.convertToAssets(sub.morphoShares);
-    }
-
-    // ============ Admin Functions ============
-    
-    function updatePlatformFee(uint256 newFeePercent) external onlyOwner {
-        SubscriptionLib.validatePlatformFee(newFeePercent);
-        platformFeePercent = newFeePercent;
-        emit PlatformFeeUpdated(newFeePercent);
-    }
-
-    function updateFeeCollector(address newFeeCollector) external onlyOwner {
-        SubscriptionLib.validateAddress(newFeeCollector);
-        feeCollector = newFeeCollector;
-        emit FeeCollectorUpdated(newFeeCollector);
-    }
-
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    function unpause() external onlyOwner {
-        _unpause();
+        emit SubscriptionCreated(msg.sender, planId, SubscriptionType.YEARLY, plan.yearlyRate, false);
     }
 }
