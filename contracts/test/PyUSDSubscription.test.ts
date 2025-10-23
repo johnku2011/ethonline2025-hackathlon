@@ -45,6 +45,7 @@ describe('PyUSDSubscription', function () {
       subscriber,
       feeCollector,
       publicClient,
+      viem: connection.viem,
     };
   }
 
@@ -97,14 +98,15 @@ describe('PyUSDSubscription', function () {
     });
 
     it('Should revert when creating plan with empty name', async function () {
-      const { subscription, merchant } = fixtures;
+      const { subscription, merchant, viem } = fixtures;
 
-      await expect(
+      await viem.assertions.revertWith(
         subscription.write.createPlan(
           ['', parseUnits('10', 6), 30n * 24n * 60n * 60n],
           { account: merchant.account }
-        )
-      ).to.be.rejectedWith('Plan name cannot be empty');
+        ),
+        'Plan name cannot be empty'
+      );
     });
 
     it('Should update plan by owner', async function () {
@@ -168,8 +170,14 @@ describe('PyUSDSubscription', function () {
 
       await subscription.write.subscribe([1n], { account: subscriber.account });
 
-      // Fast forward time
-      await networkHelpers.time.increase(Number(interval));
+      // Get subscription details before time travel
+      const subBefore = await subscription.read.subscriptions([1n]);
+      const nextBillingTime = subBefore[3]; // nextBillingTime
+
+      // Fast forward time past the billing time
+      const currentTime = await networkHelpers.time.latest();
+      const timeToIncrease = Number(nextBillingTime) - currentTime + 1;
+      await networkHelpers.time.increase(timeToIncrease);
 
       const balanceBefore = await mockToken.read.balanceOf([
         subscriber.account.address,
@@ -184,8 +192,7 @@ describe('PyUSDSubscription', function () {
     });
 
     it('Should cancel subscription', async function () {
-      const { subscription, merchant, subscriber } =
-        await loadFixture(deployFixture);
+      const { subscription, merchant, subscriber } = fixtures;
 
       await subscription.write.createPlan(
         ['Premium Plan', parseUnits('10', 6), 30n * 24n * 60n * 60n],
@@ -215,13 +222,14 @@ describe('PyUSDSubscription', function () {
     });
 
     it('Should not allow fee above 10%', async function () {
-      const { subscription, owner } = fixtures;
+      const { subscription, owner, viem } = fixtures;
 
-      await expect(
+      await viem.assertions.revertWith(
         subscription.write.updatePlatformFee([1001n], {
           account: owner.account,
-        })
-      ).to.be.rejectedWith('Fee cannot exceed 10%');
+        }),
+        'Fee cannot exceed 10%'
+      );
     });
   });
 });
