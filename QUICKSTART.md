@@ -1,195 +1,153 @@
 # 🚀 Quick Start Guide
 
-Get the PyUSD Subscription Platform running in 5 minutes!
+This guide will help you get the project running in **under 10 minutes**.
 
-## Prerequisites
+## 📋 Prerequisites
 
-- Node.js 22+ (for Hardhat 3.0)
-- pnpm installed (`npm i -g pnpm`)
-- Wallet with Arbitrum Sepolia ETH for deployment
+- Node.js 18+ & pnpm 9+
+- MetaMask browser extension
 
-## 1. Install Dependencies
+## 🎯 Choose Your Path
+
+### Path A: Local Development (5 minutes)
+
+Perfect for rapid development and testing.
+
+**Step 1: Install & Setup (1 min)**
 
 ```bash
-# Install all workspace dependencies
+git clone <repo-url>
+cd ETHGlobal-Online-2025-Hackathlon
 pnpm install
 ```
 
-## 2. Deploy Smart Contracts
+**Step 2: Start Blockchain (30 sec)**
 
 ```bash
+# Terminal 1
 cd contracts
-
-# Compile contracts
-pnpm hardhat compile
-
-# Deploy to Arbitrum Sepolia
-pnpm hardhat ignition deploy ignition/modules/PyUSDSubscription.ts \
-  --network arbitrum-sepolia \
-  --parameters ignition/parameters.json
-
-# Note the deployed addresses:
-# - MockPyUSD
-# - MockMorphoVault
-# - SubscriptionManager
+npx hardhat node
 ```
 
-### Create parameters file
+✅ Keep this running. You'll see 10 accounts with 10000 ETH each.
 
-```json
-// contracts/ignition/parameters.json
-{
-  "PyUSDSubscriptionModule": {
-    "backend": "0xYourBackendWalletAddress",
-    "owner": "0xYourOwnerAddress"
-  }
-}
-```
-
-## 3. Configure Frontend
+**Step 3: Deploy Contracts (1 min)**
 
 ```bash
-cd ../frontend
-
-# Create environment file
-echo "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id_here" > .env.local
-
-# Update contract addresses in src/lib/contracts/addresses.ts
-# Replace the addresses with your deployed contract addresses
+# Terminal 2
+cd contracts
+npx hardhat run scripts/deploy-localhost.ts --network localhost
 ```
+
+✅ Note the contract addresses from `deployments-localhost.json`.
+
+**Step 4: Configure Frontend (1 min)**
 
 Edit `frontend/src/lib/contracts/addresses.ts`:
 
 ```typescript
-export const CONTRACT_ADDRESSES = {
-  421614: {
-    // Arbitrum Sepolia
-    subscriptionManager: '0xYOUR_DEPLOYED_ADDRESS',
-    pyusd: '0xYOUR_PYUSD_ADDRESS',
-    morphoVault: '0xYOUR_VAULT_ADDRESS',
-  },
-};
+31337: {
+  subscriptionManager: '0x...', // From deployments-localhost.json
+  pyusd: '0x...',
+  morphoVault: '0x...',
+},
 ```
 
-## 4. Start Frontend
+Create `frontend/.env.local`:
 
 ```bash
-# From frontend directory
-pnpm dev
-
-# Open http://localhost:3000
+NEXT_PUBLIC_ENABLE_LOCALHOST=true
 ```
 
-## 5. Setup Backend Service
+**Step 5: Start Frontend (30 sec)**
 
 ```bash
-cd ../backend
-
-# Create environment file
-cp .env.example .env
-
-# Edit .env with your values
-nano .env
-```
-
-Required environment variables:
-
-```bash
-SUBSCRIPTION_MANAGER_ADDRESS=0xYourDeployedAddress
-BACKEND_PRIVATE_KEY=0xYourBackendPrivateKey
-RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
-CHECK_INTERVAL_MS=3600000
-```
-
-Start the backend:
-
-```bash
+# Terminal 3
+cd frontend
 pnpm dev
 ```
 
-## 6. Test the Platform
+✅ Open http://localhost:3000
 
-### Create a Subscription Plan
+**Step 6: Configure MetaMask (1 min)**
+
+1. Add Network:
+   - Network Name: Localhost
+   - RPC URL: http://127.0.0.1:8545
+   - Chain ID: 31337
+   - Currency: ETH
+
+2. Import a test account from Terminal 1
+
+**Step 7: Start Backend (optional, 30 sec)**
+
+```bash
+# Terminal 4
+cd backend
+# Edit .env:
+# NETWORK=localhost
+# SUBSCRIPTION_MANAGER_ADDRESS=0x...
+# BACKEND_PRIVATE_KEY=0x... (from Hardhat accounts)
+pnpm dev
+```
+
+✅ **Done! You're ready to develop!**
+
+---
+
+### Path B: Arbitrum Sepolia Testnet (10 minutes)
+
+For testing on a real network.
+
+**Step 1: Get Testnet ETH**
+
+1. Visit [Arbitrum Sepolia Faucet](https://faucet.quicknode.com/arbitrum/sepolia)
+2. Get some testnet ETH
+
+**Step 2: Setup Environment**
+
+Create `contracts/.env`:
+
+```bash
+PRIVATE_KEY=your_private_key_here
+```
+
+**Step 3: Deploy**
 
 ```bash
 cd contracts
-
-# Create a test plan (owner only)
-pnpm hardhat console --network arbitrum-sepolia
-
-# In console:
-const SubscriptionManager = await ethers.getContractFactory("SubscriptionManager");
-const sm = await SubscriptionManager.attach("YOUR_ADDRESS");
-await sm.createSubscriptionPlan(
-  ethers.parseUnits("9.99", 6),  // monthly rate
-  ethers.parseUnits("99", 6),    // yearly rate
-  "Basic Plan"
-);
+npx hardhat run scripts/deploy-testnet.ts --network arbitrumSepolia
 ```
 
-### Mint Test PyUSD
+**Step 4: Configure**
 
-```bash
-# In Hardhat console:
-const PyUSD = await ethers.getContractFactory("MockPyUSD");
-const pyusd = await PyUSD.attach("YOUR_PYUSD_ADDRESS");
-await pyusd.mint(
-  "YOUR_WALLET_ADDRESS",
-  ethers.parseUnits("1000", 6)  // 1000 PYUSD
-);
-```
+Same as Path A, but:
+- Use addresses from `deployments-testnet.json`
+- Update chainId `421614` in `addresses.ts`
+- Set `NEXT_PUBLIC_ENABLE_LOCALHOST=false`
+- Set `NETWORK=arbitrumSepolia` in backend
 
-### Subscribe via Frontend
+✅ **Done! View contracts on [Arbiscan](https://sepolia.arbiscan.io)!**
 
-1. Connect wallet on http://localhost:3000
-2. Navigate to `/subscriptions`
-3. Click "Subscribe" on a plan
-4. Approve PyUSD spending
-5. Confirm subscription transaction
+---
 
-## 🎯 What's Next?
+## 🔧 Troubleshooting
 
-- **Monitor Backend**: Check backend logs for payment processing
-- **Test Cancellation**: Cancel a subscription and verify refunds
-- **Check Yield**: Stake yearly and withdraw yield after some time
-- **Create More Plans**: Add different subscription tiers
+**Problem**: "Cannot connect to localhost:8545"  
+**Solution**: Make sure Hardhat node is running in Terminal 1
 
-## 🐛 Troubleshooting
+**Problem**: "Invalid nonce"  
+**Solution**: Reset MetaMask: Settings → Advanced → Clear activity tab data
 
-### Contract Compilation Errors
-
-If you see Node.js version errors:
-
-```bash
-# Use Node.js 22+
-nvm use 22
-```
-
-### Frontend Not Connecting
-
-1. Check MetaMask is on Arbitrum Sepolia
-2. Verify contract addresses in `addresses.ts`
-3. Ensure WalletConnect project ID is set
-
-### Backend Not Processing Payments
-
-1. Check backend wallet has ETH for gas
-2. Verify backend address is authorized in contract
-3. Check RPC URL is correct
-4. Look for error logs in console
+**Problem**: "Contract not found"  
+**Solution**: Make sure you've deployed and updated addresses.ts
 
 ## 📚 Next Steps
 
-- Read [PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md) for architecture details
-- Check [DEPLOYMENT.md](./DEPLOYMENT.md) for production deployment
-- Review contract tests in `contracts/test/`
-- Explore frontend components in `frontend/src/components/`
+- Read [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment info
+- Check [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) for architecture overview
+- Review [REQUIREMENTS.md](REQUIREMENTS.md) for project requirements
 
-## 🆘 Need Help?
+## 🎉 Happy Hacking!
 
-- Check the detailed documentation in each directory's README
-- Review contract events for debugging
-- Use Hardhat console for direct contract interaction
-- Check Arbitrum Sepolia block explorer for transaction details
-
-Happy Hacking! 🚀
+For questions or issues, check the [GitHub Issues](https://github.com/...).

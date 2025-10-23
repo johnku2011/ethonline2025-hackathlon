@@ -35,17 +35,41 @@ Subscribe yearly with PyUSD and earn interest rewards. Complete the full year to
 - Node.js 18+
 - pnpm 9+
 
-### Installation
+### Quick Start
+
+**Option A: Local Development (Recommended)**
 
 ```bash
-# Install dependencies
+# 1. Install dependencies
 pnpm install
 
-# Start development server
+# 2. Start Hardhat node (Terminal 1)
+cd contracts
+npx hardhat node
+
+# 3. Deploy contracts (Terminal 2)
+cd contracts
+npx hardhat run scripts/deploy-localhost.ts --network localhost
+
+# 4. Configure frontend (copy addresses from deployments-localhost.json)
+# Edit frontend/src/lib/contracts/addresses.ts
+
+# 5. Start frontend (Terminal 3)
+cd frontend
+echo "NEXT_PUBLIC_ENABLE_LOCALHOST=true" > .env.local
+pnpm dev
+
+# 6. Start backend (Terminal 4)
+cd backend
+# Configure .env with localhost settings
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the landing page.
+Open [http://localhost:3000](http://localhost:3000) to see the application.
+
+**Option B: Arbitrum Sepolia Testnet**
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for testnet deployment instructions.
 
 ### Environment Variables
 
