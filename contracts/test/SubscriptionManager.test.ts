@@ -58,7 +58,7 @@ describe('SubscriptionManager', function () {
   describe('Deployment', function () {
     it('Should set the correct PyUSD token', async function () {
       const { subscriptionManager, mockToken } = fixtures;
-      expect(await subscriptionManager.read.pyusdToken()).to.equal(
+      expect(await subscriptionManager.read.paymentToken()).to.equal(
         getAddress(mockToken.address)
       );
     });
@@ -107,13 +107,13 @@ describe('SubscriptionManager', function () {
       const planId = 1n;
       const plan = await subscriptionManager.read.plans([planId]);
 
-      expect(plan.yearlyPrice).to.equal(yearlyPrice);
-      expect(plan.name).to.equal(name);
-      expect(plan.description).to.equal(description);
-      expect(plan.provider).to.equal(getAddress(provider.account.address));
-      expect(plan.isActive).to.equal(true);
-      expect(plan.subscriberCount).to.equal(0n);
-      expect(plan.totalRevenue).to.equal(0n);
+      expect(plan[0]).to.equal(yearlyPrice); // yearlyPrice
+      expect(plan[1]).to.equal(name); // name
+      expect(plan[2]).to.equal(description); // description
+      expect(plan[3]).to.equal(getAddress(provider.account.address)); // provider
+      expect(plan[4]).to.equal(true); // isActive
+      expect(plan[5]).to.equal(0n); // subscriberCount
+      expect(plan[6]).to.equal(0n); // totalRevenue
     });
   });
 });
