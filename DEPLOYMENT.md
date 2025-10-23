@@ -1,6 +1,54 @@
 # 🚀 Deployment Guide
 
-## Quick Start
+## Environment Options
+
+This project supports three deployment environments:
+
+1. **Localhost** (Hardhat Node) - Fast local development
+2. **Arbitrum Sepolia** - Testnet deployment
+3. **Arbitrum One** - Production (future)
+
+## Option 1: Localhost Deployment (Recommended for Development)
+
+### 1. Start Hardhat Node
+
+```bash
+cd contracts
+npx hardhat node
+```
+
+Keep this terminal running. You'll see 10 test accounts with 10000 ETH each.
+
+### 2. Deploy to Localhost (New Terminal)
+
+```bash
+cd contracts
+npx hardhat run scripts/deploy-localhost.ts --network localhost
+```
+
+Deployment addresses will be saved to `deployments-localhost.json`.
+
+### 3. Update Frontend
+
+Copy addresses from `deployments-localhost.json` to `frontend/src/lib/contracts/addresses.ts` (chainId: 31337).
+
+Set environment variable in `frontend/.env.local`:
+
+```bash
+NEXT_PUBLIC_ENABLE_LOCALHOST=true
+```
+
+### 4. Update Backend
+
+Copy SubscriptionManager address to `backend/.env`:
+
+```bash
+NETWORK=localhost
+SUBSCRIPTION_MANAGER_ADDRESS=0x...
+BACKEND_PRIVATE_KEY=0x... # One of the Hardhat test accounts
+```
+
+## Option 2: Arbitrum Sepolia Testnet
 
 ### 1. Environment Setup
 
@@ -9,15 +57,13 @@ Create `.env` file in `contracts/` directory:
 ```bash
 ARBITRUM_SEPOLIA_RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
 PRIVATE_KEY=your_private_key_here
-ARBISCAN_API_KEY=your_arbiscan_api_key_here
-PYUSD_ADDRESS=0x0000000000000000000000000000000000000000
 ```
 
 ### 2. Deploy to Testnet
 
 ```bash
 cd contracts
-pnpm deploy:testnet
+npx hardhat run scripts/deploy-testnet.ts --network arbitrumSepolia
 ```
 
 **What happens:**
