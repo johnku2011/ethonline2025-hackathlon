@@ -1,8 +1,11 @@
 import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-viem";
-import "@nomicfoundation/hardhat-network-helpers";
+import hardhatViem from "@nomicfoundation/hardhat-viem";
+import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
+import hardhatMocha from "@nomicfoundation/hardhat-mocha";
+import hardhatViemAssertions from "@nomicfoundation/hardhat-viem-assertions";
 
 const config: HardhatUserConfig = {
+  plugins: [hardhatViem, hardhatNetworkHelpers, hardhatMocha, hardhatViemAssertions],
   solidity: {
     version: "0.8.28",
     settings: {
@@ -33,4 +36,3 @@ const config: HardhatUserConfig = {
 };
 
 export default config;
-
