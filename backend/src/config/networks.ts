@@ -29,8 +29,7 @@ const NETWORK_CONFIGS: Record<NetworkType, NetworkConfig> = {
   },
   arbitrumOne: {
     name: 'Arbitrum One Mainnet',
-    rpcUrl:
-      process.env.ARBITRUM_ONE_RPC_URL || 'https://arb1.arbitrum.io/rpc',
+    rpcUrl: process.env.ARBITRUM_ONE_RPC_URL || 'https://arb1.arbitrum.io/rpc',
     chainId: 42161,
     isTestnet: false,
   },
@@ -61,4 +60,3 @@ export function getNetworkConfig(): NetworkConfig {
 
   return config;
 }
-
