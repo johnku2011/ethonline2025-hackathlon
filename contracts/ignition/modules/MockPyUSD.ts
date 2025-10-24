@@ -1,4 +1,4 @@
-import { buildModule } from '@nomicfoundation/hardhat-ignition/modules';
+import { buildModule } from '@nomicfoundation/hardhat-ignition';
 
 /**
  * Hardhat Ignition module for deploying MockPyUSD (for testing)

@@ -1,4 +1,4 @@
-import { buildModule } from '@nomicfoundation/hardhat-ignition/modules';
+import { buildModule } from '@nomicfoundation/hardhat-ignition';
 import MockMorphoVaultModule from './MockMorphoVault';
 
 /**
