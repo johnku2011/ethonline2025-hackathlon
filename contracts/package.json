@@ -1,0 +1,46 @@
+{
+  "name": "@pyusd-subscription/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Smart contracts for PyUSD Subscription Platform",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.ts",
+    "deploy:local": "hardhat ignition deploy ignition/modules/SubscriptionManager.ts --network localhost && tsx scripts/generate-config.ts",
+    "deploy:testnet": "hardhat ignition deploy ignition/modules/SubscriptionManager.ts --network arbitrumSepolia && NETWORK=421614 tsx scripts/generate-config.ts",
+    "verify": "hardhat verify",
+    "clean": "hardhat clean",
+    "typechain": "hardhat typechain",
+    "generate-config": "tsx scripts/generate-config.ts"
+  },
+  "keywords": [
+    "ethereum",
+    "hardhat",
+    "smart-contracts",
+    "solidity",
+    "pyusd",
+    "subscription",
+    "arbitrum"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-mocha": "^3.0.3",
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^3.0.0",
+    "@nomicfoundation/hardhat-viem": "^3.0.0",
+    "@nomicfoundation/hardhat-viem-assertions": "^3.0.2",
+    "@openzeppelin/contracts": "^5.1.0",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.10.0",
+    "chai": "^6.2.0",
+    "hardhat": "^3.0.8",
+    "mocha": "^11.7.4",
+    "typescript": "^5.7.2",
+    "viem": "^2.21.45"
+  }
+}

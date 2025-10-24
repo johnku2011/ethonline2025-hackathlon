@@ -11,9 +11,7 @@ export function Footer() {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">P</span>
               </div>
-              <span className="font-bold text-xl text-white">
-                PyUSD Subs
-              </span>
+              <span className="font-bold text-xl text-white">PyUSD Subs</span>
             </div>
             <p className="text-sm text-gray-400">
               Revolutionizing subscriptions with Web3 and earning rewards.
@@ -64,34 +62,22 @@ export function Footer() {
             <h3 className="font-semibold text-white mb-4">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="#"
-                  className="hover:text-white transition-colors"
-                >
+                <a href="#" className="hover:text-white transition-colors">
                   Documentation
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="hover:text-white transition-colors"
-                >
+                <a href="#" className="hover:text-white transition-colors">
                   GitHub
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="hover:text-white transition-colors"
-                >
+                <a href="#" className="hover:text-white transition-colors">
                   Smart Contracts
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="hover:text-white transition-colors"
-                >
+                <a href="#" className="hover:text-white transition-colors">
                   Whitepaper
                 </a>
               </li>
@@ -103,26 +89,17 @@ export function Footer() {
             <h3 className="font-semibold text-white mb-4">Community</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="#"
-                  className="hover:text-white transition-colors"
-                >
+                <a href="#" className="hover:text-white transition-colors">
                   Twitter
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="hover:text-white transition-colors"
-                >
+                <a href="#" className="hover:text-white transition-colors">
                   Discord
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="hover:text-white transition-colors"
-                >
+                <a href="#" className="hover:text-white transition-colors">
                   Telegram
                 </a>
               </li>
@@ -158,4 +135,3 @@ export function Footer() {
     </footer>
   );
 }
-
