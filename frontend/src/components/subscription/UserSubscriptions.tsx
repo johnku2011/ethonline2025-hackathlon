@@ -12,7 +12,7 @@ import {
 
 interface SubscriptionItemProps {
   planId: bigint;
-  chainId: 421614 | 42161;
+  chainId: 31337 | 421614 | 42161;
   userAddress: `0x${string}`;
 }
 
@@ -115,8 +115,10 @@ function SubscriptionItem({
 export function UserSubscriptions() {
   const { address, chainId } = useAccount();
   const validChainId = (
-    chainId === 421614 || chainId === 42161 ? chainId : 421614
-  ) as 421614 | 42161;
+    chainId === 31337 || chainId === 421614 || chainId === 42161
+      ? chainId
+      : 31337
+  ) as 31337 | 421614 | 42161;
 
   const { data: activeSubscriptions, isLoading } = useUserActiveSubscriptions(
     validChainId,
