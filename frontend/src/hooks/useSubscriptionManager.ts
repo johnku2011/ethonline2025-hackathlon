@@ -1,9 +1,11 @@
 import {
   useReadContract,
+  useReadContracts,
   useWriteContract,
   useWaitForTransactionReceipt,
 } from 'wagmi';
 import { parseUnits } from 'viem';
+import { useMemo } from 'react';
 import {
   SUBSCRIPTION_MANAGER_ABI,
   PYUSD_ABI,
@@ -150,4 +152,63 @@ export function useSubscriptionPlan(chainId: NetworkId, planId?: bigint) {
       enabled: planId !== undefined,
     },
   });
+}
+
+// Subscription plan type
+export interface SubscriptionPlan {
+  planId: bigint;
+  monthlyRate: bigint;
+  yearlyRate: bigint;
+  isActive: boolean;
+  name: string;
+}
+
+// Read all active subscription plans
+export function useAllPlans(chainId: NetworkId) {
+  const subscriptionManagerAddress = getContractAddress(
+    chainId,
+    'subscriptionManager'
+  );
+
+  // Batch query planId 1-10
+  const { data, isLoading, error } = useReadContracts({
+    contracts: Array.from({ length: 10 }, (_, i) => ({
+      address: subscriptionManagerAddress,
+      abi: SUBSCRIPTION_MANAGER_ABI,
+      functionName: 'subscriptionPlans',
+      args: [BigInt(i + 1)],
+    })),
+    query: {
+      // Allow individual queries to fail without breaking the whole request
+      // This handles cases where some planIds don't exist yet
+      select: (data) => data,
+    },
+  });
+
+  // Filter and format active plans
+  const plans = useMemo(() => {
+    if (!data) return [];
+    
+    return data
+      .map((result, index) => {
+        if (result.status !== 'success' || !result.result) return null;
+        
+        const [monthlyRate, yearlyRate, isActive, name] = result.result;
+        
+        return {
+          planId: BigInt(index + 1),
+          monthlyRate,
+          yearlyRate,
+          isActive,
+          name,
+        } as SubscriptionPlan;
+      })
+      .filter((plan): plan is SubscriptionPlan => plan !== null && plan.isActive);
+  }, [data]);
+
+  return {
+    plans,
+    isLoading,
+    error,
+  };
 }
