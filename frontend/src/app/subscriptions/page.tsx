@@ -19,10 +19,10 @@ export default function SubscriptionsPage() {
       ? chainId
       : 31337
   ) as 31337 | 421614 | 42161;
-  
+
   const { subscribeMonthly, subscribeYearly, approvePyUSD, isPending } =
     useSubscriptionManager(validChainId);
-  
+
   const { plans, isLoading: isLoadingPlans } = useAllPlans(validChainId);
 
   const handleSubscribeMonthly = async (planId: bigint, amount: bigint) => {
@@ -124,7 +124,9 @@ export default function SubscriptionsPage() {
             </div>
           ) : plans.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-600">No subscription plans available yet.</p>
+              <p className="text-gray-600">
+                No subscription plans available yet.
+              </p>
             </div>
           ) : (
             <div className="grid md:grid-cols-3 gap-6">

@@ -17,7 +17,7 @@ async function main() {
   const connection = await hre.network.connect();
   const [deployer] = await connection.viem.getWalletClients();
   const publicClient = await connection.viem.getPublicClient();
-  
+
   console.log('Deployer:', deployer.account.address);
 
   // 1. Deploy MockPyUSD
@@ -28,15 +28,18 @@ async function main() {
 
   // 2. Deploy MockMorphoVault
   console.log('\n📝 Step 2: Deploying MockMorphoVault...');
-  const vault = await connection.viem.deployContract('contracts/mocks/MockMorphoVault.sol:MockMorphoVault', [pyusdAddress]);
+  const vault = await connection.viem.deployContract(
+    'contracts/mocks/MockMorphoVault.sol:MockMorphoVault',
+    [pyusdAddress]
+  );
   const vaultAddress = vault.address;
   console.log('✅ MockMorphoVault:', vaultAddress);
 
   // 3. Deploy SubscriptionManager
   console.log('\n📝 Step 3: Deploying SubscriptionManager...');
   const manager = await connection.viem.deployContract('SubscriptionManager', [
-    pyusdAddress,        // _paymentToken
-    vaultAddress,        // _morphoVault
+    pyusdAddress, // _paymentToken
+    vaultAddress, // _morphoVault
     deployer.account.address, // _backend
     deployer.account.address, // _owner
   ]);
@@ -71,4 +74,3 @@ main()
     console.error(error);
     process.exit(1);
   });
-

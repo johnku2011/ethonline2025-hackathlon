@@ -18,7 +18,7 @@ async function main() {
   const connection = await hre.network.connect();
   const networkName = connection.networkName;
   const isLocalhost = networkName === 'localhost' || networkName === 'hardhat';
-  
+
   console.log(`Network: ${networkName}`);
 
   // Load deployment addresses
@@ -30,7 +30,9 @@ async function main() {
   try {
     deployment = JSON.parse(readFileSync(deploymentFile, 'utf-8'));
   } catch (error) {
-    console.error('❌ Deployment file not found. Please deploy contracts first.');
+    console.error(
+      '❌ Deployment file not found. Please deploy contracts first.'
+    );
     process.exit(1);
   }
 
@@ -39,7 +41,7 @@ async function main() {
 
   // Get wallet client (deployer)
   const [deployer] = await connection.viem.getWalletClients();
-  
+
   // Get contract instance
   const subscriptionManager = await connection.viem.getContractAt(
     'SubscriptionManager',
@@ -50,9 +52,9 @@ async function main() {
   const plans = [
     { name: 'Netflix Premium', monthly: '15', yearly: '144' }, // $15/month
     { name: 'Spotify Premium', monthly: '12', yearly: '115' }, // $12/month
-    { name: 'ChatGPT Plus', monthly: '20', yearly: '192' },    // $20/month
-    { name: 'GitHub Pro', monthly: '7', yearly: '67' },        // $7/month
-    { name: 'Gym Membership', monthly: '50', yearly: '480' },  // $50/month
+    { name: 'ChatGPT Plus', monthly: '20', yearly: '192' }, // $20/month
+    { name: 'GitHub Pro', monthly: '7', yearly: '67' }, // $7/month
+    { name: 'Gym Membership', monthly: '50', yearly: '480' }, // $50/month
   ];
 
   console.log(`Using account: ${deployer.account.address}\n`);
@@ -84,4 +86,3 @@ main()
     console.error(error);
     process.exit(1);
   });
-

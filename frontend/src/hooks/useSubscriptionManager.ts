@@ -188,13 +188,13 @@ export function useAllPlans(chainId: NetworkId) {
   // Filter and format active plans
   const plans = useMemo(() => {
     if (!data) return [];
-    
+
     return data
       .map((result, index) => {
         if (result.status !== 'success' || !result.result) return null;
-        
+
         const [monthlyRate, yearlyRate, isActive, name] = result.result;
-        
+
         return {
           planId: BigInt(index + 1),
           monthlyRate,
@@ -203,7 +203,9 @@ export function useAllPlans(chainId: NetworkId) {
           name,
         } as SubscriptionPlan;
       })
-      .filter((plan): plan is SubscriptionPlan => plan !== null && plan.isActive);
+      .filter(
+        (plan): plan is SubscriptionPlan => plan !== null && plan.isActive
+      );
   }, [data]);
 
   return {
