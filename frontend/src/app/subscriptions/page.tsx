@@ -2,49 +2,28 @@
 
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { parseUnits } from 'viem';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 import { UserSubscriptions } from '@/components/subscription/UserSubscriptions';
 import {
   useSubscriptionManager,
-  useSubscriptionPlan,
+  useAllPlans,
 } from '@/hooks/useSubscriptionManager';
-
-// Mock plans for demo - in production, these would be fetched from the contract
-const DEMO_PLANS = [
-  {
-    id: 1n,
-    monthlyRate: parseUnits('9.99', 6),
-    yearlyRate: parseUnits('99', 6),
-    name: 'Basic Plan',
-  },
-  {
-    id: 2n,
-    monthlyRate: parseUnits('29.99', 6),
-    yearlyRate: parseUnits('299', 6),
-    name: 'Pro Plan',
-  },
-  {
-    id: 3n,
-    monthlyRate: parseUnits('99.99', 6),
-    yearlyRate: parseUnits('999', 6),
-    name: 'Enterprise Plan',
-  },
-];
 
 export default function SubscriptionsPage() {
   const { address, chainId } = useAccount();
-  const [selectedPlanType, setSelectedPlanType] = useState<
-    'monthly' | 'yearly'
-  >('monthly');
   const [enableAutoPay, setEnableAutoPay] = useState(true);
   const [stakeYearly, setStakeYearly] = useState(false);
 
   const validChainId = (
-    chainId === 421614 || chainId === 42161 ? chainId : 421614
-  ) as 421614 | 42161;
+    chainId === 31337 || chainId === 421614 || chainId === 42161
+      ? chainId
+      : 31337
+  ) as 31337 | 421614 | 42161;
+
   const { subscribeMonthly, subscribeYearly, approvePyUSD, isPending } =
     useSubscriptionManager(validChainId);
+
+  const { plans, isLoading: isLoadingPlans } = useAllPlans(validChainId);
 
   const handleSubscribeMonthly = async (planId: bigint, amount: bigint) => {
     try {
@@ -138,28 +117,41 @@ export default function SubscriptionsPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Available Plans
           </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {DEMO_PLANS.map((plan) => (
-              <SubscriptionCard
-                key={plan.id.toString()}
-                planId={plan.id}
-                planName={plan.name}
-                monthlyRate={plan.monthlyRate}
-                yearlyRate={plan.yearlyRate}
-                isActive={true}
-                onSubscribeMonthly={() =>
-                  handleSubscribeMonthly(
-                    plan.id,
-                    stakeYearly ? plan.yearlyRate : plan.monthlyRate
-                  )
-                }
-                onSubscribeYearly={() =>
-                  handleSubscribeYearly(plan.id, plan.yearlyRate)
-                }
-                isPending={isPending}
-              />
-            ))}
-          </div>
+          {isLoadingPlans ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="mt-4 text-gray-600">Loading plans...</p>
+            </div>
+          ) : plans.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-600">
+                No subscription plans available yet.
+              </p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-6">
+              {plans.map((plan) => (
+                <SubscriptionCard
+                  key={plan.planId.toString()}
+                  planId={plan.planId}
+                  planName={plan.name}
+                  monthlyRate={plan.monthlyRate}
+                  yearlyRate={plan.yearlyRate}
+                  isActive={plan.isActive}
+                  onSubscribeMonthly={() =>
+                    handleSubscribeMonthly(
+                      plan.planId,
+                      stakeYearly ? plan.yearlyRate : plan.monthlyRate
+                    )
+                  }
+                  onSubscribeYearly={() =>
+                    handleSubscribeYearly(plan.planId, plan.yearlyRate)
+                  }
+                  isPending={isPending}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* User's Active Subscriptions */}

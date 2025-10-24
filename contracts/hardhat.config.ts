@@ -25,6 +25,11 @@ const config: HardhatUserConfig = {
       type: 'edr-simulated' as const,
       chainId: 31337,
     },
+    localhost: {
+      type: 'http' as const,
+      url: 'http://127.0.0.1:8545',
+      chainId: 31337,
+    },
     arbitrumSepolia: {
       type: 'http' as const,
       url:

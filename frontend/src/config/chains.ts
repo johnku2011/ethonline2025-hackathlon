@@ -19,4 +19,3 @@ export const localhost = defineChain({
   },
   testnet: true,
 });
-

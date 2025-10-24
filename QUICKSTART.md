@@ -122,6 +122,7 @@ npx hardhat run scripts/deploy-testnet.ts --network arbitrumSepolia
 **Step 4: Configure**
 
 Same as Path A, but:
+
 - Use addresses from `deployments-testnet.json`
 - Update chainId `421614` in `addresses.ts`
 - Set `NEXT_PUBLIC_ENABLE_LOCALHOST=false`
