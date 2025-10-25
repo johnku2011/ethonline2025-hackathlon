@@ -23,8 +23,7 @@ function SubscriptionItem({
 }: SubscriptionItemProps) {
   const { data: subscription } = useSubscription(chainId, userAddress, planId);
   const { data: plan } = useSubscriptionPlan(chainId, planId);
-  const { cancelSubscription, withdrawYield, isPending } =
-    useSubscriptionManager(chainId);
+  const { cancelSubscription, isPending } = useSubscriptionManager(chainId);
 
   if (!subscription || !plan) return null;
 
@@ -89,25 +88,20 @@ function SubscriptionItem({
       </div>
 
       <div className="flex gap-2">
-        {morphoShares > 0n && (
-          <Button
-            onClick={() => withdrawYield(planId)}
-            disabled={isPending}
-            className="flex-1"
-            variant="secondary"
-          >
-            Withdraw Yield
-          </Button>
-        )}
         <Button
           onClick={() => cancelSubscription(planId)}
           disabled={!isActiveStatus || isPending}
           className="flex-1"
           variant="destructive"
         >
-          Cancel
+          Cancel Subscription
         </Button>
       </div>
+      {morphoShares > 0n && (
+        <p className="text-xs text-gray-500 mt-2">
+          💡 Yield will be automatically returned when you cancel
+        </p>
+      )}
     </div>
   );
 }
