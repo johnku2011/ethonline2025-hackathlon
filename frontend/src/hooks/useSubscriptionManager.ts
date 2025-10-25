@@ -37,16 +37,16 @@ export function useSubscriptionManager(chainId: NetworkId) {
   };
 
   // Subscribe to monthly plan
+  // Note: Auto-pay is now enabled by default in the Lab version contract
   const subscribeMonthly = async (
     planId: bigint,
-    enableAutoPay: boolean,
     stakeYearlyAmount: boolean
   ) => {
     return writeContract({
       address: subscriptionManagerAddress,
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'subscribeMonthly',
-      args: [planId, enableAutoPay, stakeYearlyAmount],
+      args: [planId, stakeYearlyAmount],
     });
   };
 
@@ -70,22 +70,13 @@ export function useSubscriptionManager(chainId: NetworkId) {
     });
   };
 
-  // Withdraw yield
-  const withdrawYield = async (planId: bigint) => {
-    return writeContract({
-      address: subscriptionManagerAddress,
-      abi: SUBSCRIPTION_MANAGER_ABI,
-      functionName: 'withdrawYield',
-      args: [planId],
-    });
-  };
+  // Note: withdrawYield removed in Lab version - yield is automatically returned on cancellation
 
   return {
     approvePyUSD,
     subscribeMonthly,
     subscribeYearly,
     cancelSubscription,
-    withdrawYield,
     isPending,
     isConfirming,
     isSuccess,
