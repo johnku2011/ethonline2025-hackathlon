@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 
 export function CTASection() {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-4xl mx-auto">
         <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl p-12 text-center text-white shadow-2xl">
           {/* Heading */}

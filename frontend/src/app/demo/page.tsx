@@ -4,36 +4,36 @@ import { Button } from '@/components/ui/Button';
 
 export default function DemoPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
               🎮 Sandbox Demo
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
+            <p className="text-xl text-gray-600">
               Try our platform risk-free on Arbitrum Sepolia testnet
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-12 text-center border-2 border-blue-200 dark:border-blue-800">
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-12 text-center border-2 border-blue-200">
             <div className="mb-8">
               <div className="text-6xl mb-4">🚧</div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Demo Coming Soon
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-gray-600 mb-6">
                 The sandbox demo will be available once we deploy the smart
                 contracts to Arbitrum Sepolia testnet.
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-8 text-left">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white rounded-xl p-6 mb-8 text-left">
+              <h3 className="font-semibold text-gray-900 mb-4">
                 What you'll be able to do:
               </h3>
-              <ul className="space-y-3 text-gray-600 dark:text-gray-300">
+              <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start">
                   <span className="mr-2">✅</span>
                   <span>Get a pre-funded demo wallet with testnet PyUSD</span>
