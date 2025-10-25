@@ -27,19 +27,16 @@ function SubscriptionItem({
 
   if (!subscription || !plan) return null;
 
-  const [monthlyRate, yearlyRate, isActive, name] = plan;
-  const [
+  // Access struct properties directly (not array destructuring)
+  const { monthlyRate, yearlyRate, isActive, name } = plan;
+  const {
     subType,
     status,
-    ,
-    ,
     startTime,
-    ,
     expirationTime,
-    ,
     stakedAmount,
     morphoShares,
-  ] = subscription;
+  } = subscription;
 
   const isMonthly = subType === 0;
   const isActiveStatus = status === 1;
