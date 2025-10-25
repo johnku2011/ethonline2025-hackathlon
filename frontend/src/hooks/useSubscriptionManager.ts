@@ -74,6 +74,17 @@ export function useSubscriptionManager(chainId: NetworkId) {
     });
   };
 
+  // Mint PyUSD for testing
+  const mintPyUSD = async (to: `0x${string}`, amount: bigint) => {
+    return writeContract({
+      address: pyusdAddress,
+      abi: PYUSD_ABI,
+      functionName: 'mint',
+      args: [to, amount],
+      value: 0n,
+    });
+  };
+
   // Note: withdrawYield removed in Lab version - yield is automatically returned on cancellation
 
   return {
@@ -81,6 +92,7 @@ export function useSubscriptionManager(chainId: NetworkId) {
     subscribeMonthly,
     subscribeYearly,
     cancelSubscription,
+    mintPyUSD,
     isPending,
     isConfirming,
     isSuccess,
