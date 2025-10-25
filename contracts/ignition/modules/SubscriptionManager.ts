@@ -12,36 +12,40 @@ import MockMorphoVaultModule from './MockMorphoVault';
 const SubscriptionManagerModule = buildModule(
   'SubscriptionManagerModule',
   (m) => {
+    // Get the deployer account to use as default owner
+    const deployer = m.getAccount(0);
+
     // Get deployment parameters
     const pyusdAddress = m.getParameter(
       'pyusdAddress',
       '0x0000000000000000000000000000000000000000' // Will be replaced during deployment
     );
 
+    const morphoVaultAddress = m.getParameter(
+      'morphoVaultAddress',
+      '0x0000000000000000000000000000000000000000' // Will be replaced during deployment
+    );
+
     const backend = m.getParameter(
       'backend',
-      '0x0000000000000000000000000000000000000000' // Backend address
+      deployer // Use deployer as default backend
     );
 
     const owner = m.getParameter(
       'owner',
-      '0x0000000000000000000000000000000000000000' // Owner address
+      deployer // Use deployer as default owner
     );
-
-    // Use the MockMorphoVault module
-    const { morphoVault } = m.useModule(MockMorphoVaultModule);
 
     // Deploy SubscriptionManager with dependencies
     // Constructor: (paymentToken, morphoVault, backend, owner)
     const subscriptionManager = m.contract(
       'contracts/SubscriptionManager.sol:SubscriptionManager',
-      [pyusdAddress, morphoVault, backend, owner]
+      [pyusdAddress, morphoVaultAddress, backend, owner]
     );
 
     // Return deployed contracts for frontend configuration
     return {
       subscriptionManager,
-      morphoVault,
     };
   }
 );

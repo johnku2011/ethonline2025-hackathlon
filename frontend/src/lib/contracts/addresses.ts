@@ -7,10 +7,15 @@ export const CONTRACT_ADDRESSES = {
     morphoVault: '0xa513e6e4b8f2a923d98304ec87f64353c4d5c853',
   },
   // Arbitrum Sepolia Testnet (Lab deployed version)
+  // 421614: {
+  //   subscriptionManager: '0x84Bd1674AEdCEdE32caAE8bA405e0E9a23AB5179',
+  //   pyusd: '0xeA165CAeb6450359eC4A62bC4C3aa6E9256f6E8d',
+  //   morphoVault: '0x3Bb0B250dBd6572372C221A8F2b96E2948dEB250',
+  // },
   421614: {
-    subscriptionManager: '0x84Bd1674AEdCEdE32caAE8bA405e0E9a23AB5179',
-    pyusd: '0xeA165CAeb6450359eC4A62bC4C3aa6E9256f6E8d',
-    morphoVault: '0x3Bb0B250dBd6572372C221A8F2b96E2948dEB250',
+    SubscriptionManager: '0x13445Bb62F05dc5f460aAE3F721Dd94C34D499c1',
+    MockPyUSD: '0x234982D988f139A77470d1d94ca517F2b404d92a',
+    MockMorphoVault: '0x87569E608a51797F4578740c86334CFcAE1D82Db',
   },
   // Arbitrum One Mainnet
   42161: {
