@@ -24,7 +24,7 @@ async function main() {
   // Load deployment addresses
   const deploymentFile = isLocalhost
     ? join(__dirname, '../../deployments-localhost.json')
-    : join(__dirname, '../../deployments-arbitrum-sepolia.json');
+    : join(__dirname, '../../deployments-testnet.json');
 
   let deployment;
   try {
