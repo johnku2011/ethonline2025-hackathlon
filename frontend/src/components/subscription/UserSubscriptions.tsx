@@ -27,23 +27,20 @@ function SubscriptionItem({
 
   if (!subscription || !plan) return null;
 
-  // Use array destructuring for tuples returned from smart contract
-  // getSubscription returns: [subType, status, monthlyRate, yearlyRate, startTime, lastPayment, expirationTime, autoPayEnabled, stakedAmount, morphoShares]
-  const [
+  // getSubscription returns a named tuple (object) - use object destructuring
+  const {
     subType,
     status,
     monthlyRate,
     yearlyRate,
     startTime,
-    _lastPayment,
     expirationTime,
-    _autoPayEnabled,
     stakedAmount,
     morphoShares,
-  ] = subscription;
+  } = subscription;
 
-  // subscriptionPlans returns: [monthlyRate, yearlyRate, isActive, name]
-  const [_planMonthlyRate, _planYearlyRate, _isActive, name] = plan;
+  // subscriptionPlans returns multiple outputs (array) - use array destructuring
+  const [planMonthlyRate, planYearlyRate, isActive, name] = plan;
 
   const isMonthly = subType === 0;
   const isActiveStatus = status === 1;
