@@ -209,3 +209,43 @@ export function useAllPlans(chainId: NetworkId) {
     error,
   };
 }
+
+// Read PyUSD balance
+export function usePyUSDBalance(
+  chainId: NetworkId,
+  userAddress?: `0x${string}`
+) {
+  const pyusdAddress = getContractAddress(chainId, 'pyusd');
+
+  return useReadContract({
+    address: pyusdAddress,
+    abi: PYUSD_ABI,
+    functionName: 'balanceOf',
+    args: userAddress ? [userAddress] : undefined,
+    query: {
+      enabled: !!userAddress,
+    },
+  });
+}
+
+// Read PyUSD allowance
+export function usePyUSDAllowance(
+  chainId: NetworkId,
+  userAddress?: `0x${string}`
+) {
+  const pyusdAddress = getContractAddress(chainId, 'pyusd');
+  const subscriptionManagerAddress = getContractAddress(
+    chainId,
+    'subscriptionManager'
+  );
+
+  return useReadContract({
+    address: pyusdAddress,
+    abi: PYUSD_ABI,
+    functionName: 'allowance',
+    args: userAddress ? [userAddress, subscriptionManagerAddress] : undefined,
+    query: {
+      enabled: !!userAddress,
+    },
+  });
+}
