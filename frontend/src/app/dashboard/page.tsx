@@ -65,7 +65,7 @@ export default function DashboardPage() {
         {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {/* PyUSD Balance */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+          <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
             <div className="text-sm font-medium text-blue-600 mb-1">
               PyUSD Balance
             </div>
@@ -76,7 +76,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Active Subscriptions */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
+          <div className="bg-linear-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
             <div className="text-sm font-medium text-green-600 mb-1">
               Active Subscriptions
             </div>
@@ -89,7 +89,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Network Status */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
+          <div className="bg-linear-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
             <div className="text-sm font-medium text-purple-600 mb-1">
               Network
             </div>
