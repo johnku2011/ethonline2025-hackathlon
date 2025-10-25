@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import { formatUnits, parseUnits } from 'viem';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 import { UserSubscriptions } from '@/components/subscription/UserSubscriptions';
 import {
   useSubscriptionManager,
   useAllPlans,
+  usePyUSDBalance,
 } from '@/hooks/useSubscriptionManager';
 
 export default function SubscriptionsPage() {
@@ -20,10 +22,11 @@ export default function SubscriptionsPage() {
       : 31337
   ) as 31337 | 421614 | 42161;
 
-  const { subscribeMonthly, subscribeYearly, approvePyUSD, isPending } =
+  const { subscribeMonthly, subscribeYearly, approvePyUSD, mintPyUSD, isPending } =
     useSubscriptionManager(validChainId);
 
   const { plans, isLoading: isLoadingPlans } = useAllPlans(validChainId);
+  const { data: balance } = usePyUSDBalance(validChainId, address);
 
   const handleSubscribeMonthly = async (planId: bigint, amount: bigint) => {
     try {
@@ -47,6 +50,19 @@ export default function SubscriptionsPage() {
     }
   };
 
+  const handleMintPyUSD = async () => {
+    if (!address) return;
+    try {
+      // Mint 1000 PyUSD for testing
+      const amount = parseUnits('1000', 6); // PyUSD has 6 decimals
+      await mintPyUSD(address, amount);
+    } catch (error) {
+      console.error('Mint error:', error);
+    }
+  };
+
+  const formattedBalance = balance ? formatUnits(balance, 6) : '0';
+
   if (!address) {
     return (
       <div className="container mx-auto px-4 pt-32 pb-16">
@@ -69,10 +85,25 @@ export default function SubscriptionsPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Subscription Plans
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 mb-6">
             Choose a plan that works for you. Pay with PyUSD and earn yield on
             staked funds.
           </p>
+
+          {/* PyUSD Balance and Mint */}
+          <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex-1">
+              <p className="text-sm text-blue-600 font-medium">Your PyUSD Balance</p>
+              <p className="text-2xl font-bold text-blue-900">{formattedBalance} PYUSD</p>
+            </div>
+            <button
+              onClick={handleMintPyUSD}
+              disabled={isPending}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isPending ? 'Processing...' : 'Get 1000 PyUSD'}
+            </button>
+          </div>
         </div>
 
         {/* Subscription Options */}
