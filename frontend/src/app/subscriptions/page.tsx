@@ -22,8 +22,13 @@ export default function SubscriptionsPage() {
       : 31337
   ) as 31337 | 421614 | 42161;
 
-  const { subscribeMonthly, subscribeYearly, approvePyUSD, mintPyUSD, isPending } =
-    useSubscriptionManager(validChainId);
+  const {
+    subscribeMonthly,
+    subscribeYearly,
+    approvePyUSD,
+    mintPyUSD,
+    isPending,
+  } = useSubscriptionManager(validChainId);
 
   const { plans, isLoading: isLoadingPlans } = useAllPlans(validChainId);
   const { data: balance } = usePyUSDBalance(validChainId, address);
@@ -107,8 +112,12 @@ export default function SubscriptionsPage() {
           {/* PyUSD Balance and Mint */}
           <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex-1">
-              <p className="text-sm text-blue-600 font-medium">Your PyUSD Balance</p>
-              <p className="text-2xl font-bold text-blue-900">{formattedBalance} PYUSD</p>
+              <p className="text-sm text-blue-600 font-medium">
+                Your PyUSD Balance
+              </p>
+              <p className="text-2xl font-bold text-blue-900">
+                {formattedBalance} PYUSD
+              </p>
             </div>
             <button
               onClick={handleMintPyUSD}

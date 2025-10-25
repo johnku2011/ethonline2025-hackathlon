@@ -35,21 +35,15 @@ export function HeroSection() {
           <div className="flex flex-wrap justify-center gap-4 mb-12">
             <div className="bg-white rounded-lg px-6 py-3 shadow-md">
               <div className="text-2xl font-bold text-blue-600">4.5% APY</div>
-              <div className="text-sm text-gray-600">
-                Interest Rewards
-              </div>
+              <div className="text-sm text-gray-600">Interest Rewards</div>
             </div>
             <div className="bg-white rounded-lg px-6 py-3 shadow-md">
               <div className="text-2xl font-bold text-green-600">100%</div>
-              <div className="text-sm text-gray-600">
-                Refundable
-              </div>
+              <div className="text-sm text-gray-600">Refundable</div>
             </div>
             <div className="bg-white rounded-lg px-6 py-3 shadow-md">
               <div className="text-2xl font-bold text-purple-600">0 Fees</div>
-              <div className="text-sm text-gray-600">
-                No Hidden Costs
-              </div>
+              <div className="text-sm text-gray-600">No Hidden Costs</div>
             </div>
           </div>
 
@@ -71,17 +65,11 @@ export function HeroSection() {
           <div className="mt-12 text-sm text-gray-500">
             <p>Powered by</p>
             <div className="flex justify-center items-center gap-8 mt-4">
-              <span className="font-semibold text-gray-700">
-                PyUSD
-              </span>
+              <span className="font-semibold text-gray-700">PyUSD</span>
               <span className="text-gray-300">•</span>
-              <span className="font-semibold text-gray-700">
-                Arbitrum
-              </span>
+              <span className="font-semibold text-gray-700">Arbitrum</span>
               <span className="text-gray-300">•</span>
-              <span className="font-semibold text-gray-700">
-                Solidity
-              </span>
+              <span className="font-semibold text-gray-700">Solidity</span>
             </div>
           </div>
         </div>
