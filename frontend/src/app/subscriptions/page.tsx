@@ -30,23 +30,37 @@ export default function SubscriptionsPage() {
 
   const handleSubscribeMonthly = async (planId: bigint, amount: bigint) => {
     try {
+      // Check balance before subscribing
+      if (!balance || balance < amount) {
+        alert('Insufficient PyUSD balance. Please mint PyUSD first.');
+        return;
+      }
+
       // First approve PyUSD spending
       await approvePyUSD(amount);
       // Then subscribe (auto-pay is default enabled)
       await subscribeMonthly(planId, stakeYearly);
     } catch (error) {
       console.error('Subscription error:', error);
+      alert('Subscription failed. Please try again.');
     }
   };
 
   const handleSubscribeYearly = async (planId: bigint, amount: bigint) => {
     try {
+      // Check balance before subscribing
+      if (!balance || balance < amount) {
+        alert('Insufficient PyUSD balance. Please mint PyUSD first.');
+        return;
+      }
+
       // First approve PyUSD spending
       await approvePyUSD(amount);
       // Then subscribe
       await subscribeYearly(planId);
     } catch (error) {
       console.error('Subscription error:', error);
+      alert('Subscription failed. Please try again.');
     }
   };
 
