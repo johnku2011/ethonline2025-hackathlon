@@ -19,9 +19,9 @@ export function Button({
     primary:
       'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl',
     secondary:
-      'bg-gray-200 hover:bg-gray-300 text-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white',
+      'bg-gray-200 hover:bg-gray-300 text-gray-900',
     outline:
-      'border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20',
+      'border-2 border-blue-600 text-blue-600 hover:bg-blue-50',
   };
 
   const sizes = {
