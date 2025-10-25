@@ -1,4 +1,4 @@
-import { buildModule } from '@nomicfoundation/hardhat-ignition';
+import { buildModule } from '@nomicfoundation/hardhat-ignition/modules';
 import { parseUnits } from 'viem';
 
 /**
@@ -15,7 +15,10 @@ const MockMorphoVaultModule = buildModule('MockMorphoVaultModule', (m) => {
   );
 
   // Deploy MockMorphoVault
-  const morphoVault = m.contract('MockMorphoVault', [pyusdAddress]);
+  const morphoVault = m.contract(
+    'contracts/MockMorphoVault.sol:MockMorphoVault',
+    [pyusdAddress]
+  );
 
   // Return deployed contracts for use in other modules or scripts
   return { morphoVault };

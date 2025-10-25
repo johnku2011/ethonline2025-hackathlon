@@ -1,16 +1,10 @@
 import { HardhatUserConfig } from 'hardhat/config';
-import hardhatViem from '@nomicfoundation/hardhat-viem';
-import hardhatNetworkHelpers from '@nomicfoundation/hardhat-network-helpers';
-import hardhatMocha from '@nomicfoundation/hardhat-mocha';
-import hardhatViemAssertions from '@nomicfoundation/hardhat-viem-assertions';
+import hardhatToolboxViem from '@nomicfoundation/hardhat-toolbox-viem';
+import hardhatIgnitionViem from '@nomicfoundation/hardhat-ignition-viem';
+import 'dotenv/config';
 
 const config: HardhatUserConfig = {
-  plugins: [
-    hardhatViem,
-    hardhatNetworkHelpers,
-    hardhatMocha,
-    hardhatViemAssertions,
-  ],
+  plugins: [hardhatToolboxViem, hardhatIgnitionViem],
   solidity: {
     version: '0.8.28',
     settings: {
@@ -35,7 +29,10 @@ const config: HardhatUserConfig = {
       url:
         process.env.ARBITRUM_SEPOLIA_RPC_URL ||
         'https://sepolia-rollup.arbitrum.io/rpc',
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts:
+        process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.startsWith('0x')
+          ? [process.env.PRIVATE_KEY]
+          : undefined,
       chainId: 421614,
     },
   },

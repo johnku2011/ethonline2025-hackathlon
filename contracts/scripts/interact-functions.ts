@@ -97,4 +97,3 @@ export async function getContractInfo() {
 
   return { backend, owner, paused };
 }
-

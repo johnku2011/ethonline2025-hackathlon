@@ -114,4 +114,3 @@ export async function cancelSubscription(planId: bigint): Promise<Hash> {
   await waitForTransaction(hash, `Cancelling subscription ${planId}`);
   return hash;
 }
-

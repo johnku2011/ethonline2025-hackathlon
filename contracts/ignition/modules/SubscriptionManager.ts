@@ -1,4 +1,4 @@
-import { buildModule } from '@nomicfoundation/hardhat-ignition';
+import { buildModule } from '@nomicfoundation/hardhat-ignition/modules';
 import MockMorphoVaultModule from './MockMorphoVault';
 
 /**
@@ -18,20 +18,25 @@ const SubscriptionManagerModule = buildModule(
       '0x0000000000000000000000000000000000000000' // Will be replaced during deployment
     );
 
-    const feeCollector = m.getParameter(
-      'feeCollector',
-      '0x0000000000000000000000000000000000000000' // Will be replaced with deployer address
+    const backend = m.getParameter(
+      'backend',
+      '0x0000000000000000000000000000000000000000' // Backend address
+    );
+
+    const owner = m.getParameter(
+      'owner',
+      '0x0000000000000000000000000000000000000000' // Owner address
     );
 
     // Use the MockMorphoVault module
     const { morphoVault } = m.useModule(MockMorphoVaultModule);
 
     // Deploy SubscriptionManager with dependencies
-    const subscriptionManager = m.contract('SubscriptionManager', [
-      pyusdAddress,
-      morphoVault,
-      feeCollector,
-    ]);
+    // Constructor: (paymentToken, morphoVault, backend, owner)
+    const subscriptionManager = m.contract(
+      'contracts/SubscriptionManager.sol:SubscriptionManager',
+      [pyusdAddress, morphoVault, backend, owner]
+    );
 
     // Return deployed contracts for frontend configuration
     return {

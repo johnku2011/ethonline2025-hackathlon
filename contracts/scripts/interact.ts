@@ -5,7 +5,12 @@
  */
 
 import { Address } from 'viem';
-import { CHAIN, getWalletClient, serializeBigInt, ADDRESSES } from './interact-config.js';
+import {
+  CHAIN,
+  getWalletClient,
+  serializeBigInt,
+  ADDRESSES,
+} from './interact-config.js';
 import {
   getTokenBalance,
   getSubscriptionPlan,
@@ -129,4 +134,3 @@ async function main() {
 }
 
 main();
-

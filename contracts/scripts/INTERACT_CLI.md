@@ -113,6 +113,7 @@ npx tsx scripts/interact.ts cancel 1
 - `interact.ts` - CLI 入口
 
 **為什麼分模塊？**
+
 - 每個文件 <100 行，符合 Hackathon commit 規範
 - 模塊化設計，易於維護和測試
 - 可以單獨導入使用（例如在測試腳本中）
@@ -129,4 +130,3 @@ npx tsx scripts/interact.ts cancel 1
 - 合約文檔：`../contracts/SubscriptionManager.sol`
 - 部署指南：`../README.md`
 - 前端整合：`../../frontend/`
-

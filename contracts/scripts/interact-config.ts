@@ -113,5 +113,3 @@ export function serializeBigInt(value: any): any {
   }
   return value;
 }
-
-

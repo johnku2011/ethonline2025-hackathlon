@@ -119,7 +119,15 @@ export const SUBSCRIPTION_MANAGER_ABI = ${JSON.stringify(subscriptionManagerABI,
  */
 async function main() {
   const network = process.env.NETWORK || '421614'; // Default: Arbitrum Sepolia
-  const outputDir = join(__dirname, '..', '..', 'frontend', 'src', 'lib', 'contracts');
+  const outputDir = join(
+    __dirname,
+    '..',
+    '..',
+    'frontend',
+    'src',
+    'lib',
+    'contracts'
+  );
 
   console.log('🚀 Generating frontend configuration...');
   console.log(`📡 Network: ${network}`);
