@@ -27,16 +27,23 @@ function SubscriptionItem({
 
   if (!subscription || !plan) return null;
 
-  // Access struct properties directly (not array destructuring)
-  const { monthlyRate, yearlyRate, isActive, name } = plan;
-  const {
+  // Use array destructuring for tuples returned from smart contract
+  // getSubscription returns: [subType, status, monthlyRate, yearlyRate, startTime, lastPayment, expirationTime, autoPayEnabled, stakedAmount, morphoShares]
+  const [
     subType,
     status,
+    monthlyRate,
+    yearlyRate,
     startTime,
+    _lastPayment,
     expirationTime,
+    _autoPayEnabled,
     stakedAmount,
     morphoShares,
-  } = subscription;
+  ] = subscription;
+
+  // subscriptionPlans returns: [monthlyRate, yearlyRate, isActive, name]
+  const [_planMonthlyRate, _planYearlyRate, _isActive, name] = plan;
 
   const isMonthly = subType === 0;
   const isActiveStatus = status === 1;
