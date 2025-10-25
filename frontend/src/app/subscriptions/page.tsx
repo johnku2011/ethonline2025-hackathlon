@@ -49,7 +49,7 @@ export default function SubscriptionsPage() {
 
   if (!address) {
     return (
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 pt-32 pb-16">
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Subscription Plans
@@ -63,7 +63,7 @@ export default function SubscriptionsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 pt-32 pb-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
