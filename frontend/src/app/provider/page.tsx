@@ -1,11 +1,6 @@
-import { Navbar } from '@/components/ui/Navbar';
-import { Footer } from '@/components/ui/Footer';
-
 export default function ProviderPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Become a Provider
@@ -20,8 +15,6 @@ export default function ProviderPage() {
             </p>
           </div>
         </div>
-      </main>
-      <Footer />
     </div>
   );
 }
