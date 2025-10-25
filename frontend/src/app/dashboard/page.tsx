@@ -8,7 +8,7 @@ import { getContractAddress, PYUSD_ABI } from '@/lib/contracts';
 
 export default function DashboardPage() {
   const { address, chainId } = useAccount();
-  
+
   const validChainId = (
     chainId === 31337 || chainId === 421614 || chainId === 42161
       ? chainId
@@ -48,9 +48,7 @@ export default function DashboardPage() {
   }
 
   const addressShort = `${address.slice(0, 6)}...${address.slice(-4)}`;
-  const formattedBalance = pyusdBalance
-    ? formatUnits(pyusdBalance, 6)
-    : '0.00';
+  const formattedBalance = pyusdBalance ? formatUnits(pyusdBalance, 6) : '0.00';
   const activeCount = activeSubscriptions?.length || 0;
 
   return (
