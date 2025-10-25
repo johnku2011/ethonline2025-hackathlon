@@ -7,24 +7,30 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-interface IMorphoVault {
-    function deposit(uint256 assets, address receiver) external returns (uint256 shares);
-    function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares);
-    function balanceOf(address account) external view returns (uint256);
-    function convertToAssets(uint256 shares) external view returns (uint256);
-    function asset() external view returns (address);
-}
+import {IMetaMorpho} from "../lib/metamorpho/src/interfaces/IMetaMorpho.sol";
 
 /**
  * @title SubscriptionManager
- * @notice Manage subscriptions with PyUSD and yield generation via Morpho
- * @dev Supports monthly and yearly subscriptions with automated payments
+ * @dev A subscription contract with two business models:
+ * 1. Monthly subscriptions with automatic payments and optional yearly staking
+ * 2. Yearly subscriptions with immediate payment and yield generation
  */
 contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
 
-    enum SubscriptionType { MONTHLY, YEARLY }
-    enum SubscriptionStatus { NONE, ACTIVE, CANCELLED, EXPIRED }
+    // Subscription types
+    enum SubscriptionType {
+        MONTHLY,
+        YEARLY
+    }
+
+    // Subscription status
+    enum SubscriptionStatus {
+        NONE,
+        ACTIVE,
+        CANCELLED,
+        EXPIRED
+    }
 
     struct Subscription {
         SubscriptionType subType;
@@ -35,8 +41,8 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
         uint256 lastPayment;
         uint256 expirationTime;
         bool autoPayEnabled;
-        uint256 stakedAmount;
-        uint256 morphoShares;
+        uint256 stakedAmount; // For yearly staking in monthly subscriptions
+        uint256 morphoShares; // Shares in Morpho vault
     }
 
     struct SubscriptionPlan {
@@ -46,20 +52,22 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
         string name;
     }
 
-    mapping(address => mapping(uint256 => Subscription)) public subscriptions;
+    // State variables
+    mapping(address => mapping(uint256 => Subscription)) public subscriptions; // user => planId => subscription
     mapping(uint256 => SubscriptionPlan) public subscriptionPlans;
-    mapping(address => uint256[]) public userActiveSubscriptions;
-    
+    mapping(address => uint256[]) public userActiveSubscriptions; // user => array of planIds
+
     uint256 public nextPlanId = 1;
     uint256 public constant SECONDS_IN_MONTH = 30 days;
     uint256 public constant SECONDS_IN_YEAR = 365 days;
-    
-    IERC20 public immutable paymentToken;
-    IMorphoVault public immutable morphoVault;
-    
-    address public backend;
-    uint256 public totalYearlyDeposits;
 
+    IERC20 public immutable paymentToken; // ETH or ERC20 token for payments
+    IMetaMorpho public immutable morphoVault; // Morpho vault for yield generation
+
+    address public backend; // Backend address for automated payments
+    uint256 public totalYearlyDeposits; // Total deposits in Morpho from yearly subscriptions
+
+    // Events
     event SubscriptionCreated(
         address indexed user,
         uint256 indexed planId,
@@ -67,40 +75,48 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
         uint256 amount,
         bool autoPayEnabled
     );
-    
+
     event MonthlyPaymentProcessed(
         address indexed user,
         uint256 indexed planId,
         uint256 amount,
         uint256 timestamp
     );
-    
+
     event YearlyStakeDeposited(
         address indexed user,
         uint256 indexed planId,
         uint256 amount,
         uint256 morphoShares
     );
-    
+
     event SubscriptionCancelled(
         address indexed user,
         uint256 indexed planId,
         uint256 refundAmount
     );
-    
-    event YieldWithdrawn(
+
+    // event YieldWithdrawn(
+    //     address indexed user,
+    //     uint256 indexed planId,
+    //     uint256 amount
+    // );
+
+    event BusinessOwnerWithdrawal(uint256 amount, uint256 remainingBalance);
+
+    event AutoPaymentPermissionGranted(
         address indexed user,
         uint256 indexed planId,
-        uint256 amount
+        uint256 allowanceAmount
     );
 
     modifier onlyBackend() {
-        require(msg.sender == backend, "Only backend");
+        require(msg.sender == backend, "Only backend can call this function");
         _;
     }
 
     modifier validPlan(uint256 planId) {
-        require(subscriptionPlans[planId].isActive, "Invalid plan");
+        require(subscriptionPlans[planId].isActive, "Invalid or inactive plan");
         _;
     }
 
@@ -110,20 +126,30 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
         address _backend,
         address _owner
     ) Ownable(_owner) {
+        require(_paymentToken != address(0), "Payment token required");
+        require(_morphoVault != address(0), "Morpho vault required");
+
         paymentToken = IERC20(_paymentToken);
-        morphoVault = IMorphoVault(_morphoVault);
+        morphoVault = IMetaMorpho(_morphoVault);
         backend = _backend;
-        
-        require(morphoVault.asset() == _paymentToken, "Asset mismatch");
+
+        // Verify Morpho vault asset matches payment token
+        require(
+            morphoVault.asset() == _paymentToken,
+            "Morpho vault asset mismatch"
+        );
     }
 
+    /**
+     * @dev Create a new subscription plan
+     */
     function createSubscriptionPlan(
         uint256 _monthlyRate,
         uint256 _yearlyRate,
         string memory _name
     ) external onlyOwner returns (uint256) {
-        require(_monthlyRate > 0 && _yearlyRate > 0, "Invalid rates");
-        
+        require(_monthlyRate > 0 && _yearlyRate > 0, "Rates must be positive");
+
         uint256 planId = nextPlanId++;
         subscriptionPlans[planId] = SubscriptionPlan({
             monthlyRate: _monthlyRate,
@@ -131,28 +157,45 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
             isActive: true,
             name: _name
         });
-        
+
         return planId;
     }
 
+    /**
+     * @dev Subscribe with monthly payments
+     * @param planId The subscription plan ID
+     * @param stakeYearlyAmount Whether to stake one year worth of payments upfront
+     */
     function subscribeMonthly(
         uint256 planId,
-        bool enableAutoPay,
         bool stakeYearlyAmount
     ) external validPlan(planId) nonReentrant whenNotPaused {
-        require(subscriptions[msg.sender][planId].status == SubscriptionStatus.NONE, "Already subscribed");
-        
-        SubscriptionPlan memory plan = subscriptionPlans[planId];
-        uint256 totalAmount = stakeYearlyAmount ? plan.yearlyRate : plan.monthlyRate;
+        bool enableAutoPay = true; // Default to auto-pay enabled
+        require(
+            subscriptions[msg.sender][planId].status == SubscriptionStatus.NONE,
+            "Already subscribed"
+        );
 
+        SubscriptionPlan memory plan = subscriptionPlans[planId];
+        uint256 totalAmount = plan.monthlyRate;
+
+        if (stakeYearlyAmount) {
+            totalAmount = plan.yearlyRate;
+        }
+
+        // Collect PYUSD from subscriber
         paymentToken.safeTransferFrom(msg.sender, address(this), totalAmount);
 
         uint256 morphoShares = 0;
         uint256 stakedAmount = 0;
 
         if (stakeYearlyAmount) {
+            // Deposit yearly amount to Morpho for yield
             stakedAmount = plan.yearlyRate;
-            paymentToken.safeIncreaseAllowance(address(morphoVault), stakedAmount);
+            paymentToken.safeIncreaseAllowance(
+                address(morphoVault),
+                stakedAmount
+            );
             morphoShares = morphoVault.deposit(stakedAmount, address(this));
         }
 
@@ -171,24 +214,62 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
 
         userActiveSubscriptions[msg.sender].push(planId);
 
-        emit SubscriptionCreated(msg.sender, planId, SubscriptionType.MONTHLY, totalAmount, enableAutoPay);
-        
+        emit SubscriptionCreated(
+            msg.sender,
+            planId,
+            SubscriptionType.MONTHLY,
+            totalAmount,
+            enableAutoPay
+        );
+
+        if (enableAutoPay) {
+            emit AutoPaymentPermissionGranted(
+                msg.sender,
+                planId,
+                plan.monthlyRate
+            );
+        }
+
         if (stakeYearlyAmount) {
-            emit YearlyStakeDeposited(msg.sender, planId, stakedAmount, morphoShares);
+            emit YearlyStakeDeposited(
+                msg.sender,
+                planId,
+                stakedAmount,
+                morphoShares
+            );
         }
     }
 
+    /**
+     * @dev Subscribe with yearly payment
+     * @param planId The subscription plan ID
+     */
     function subscribeYearly(
         uint256 planId
     ) external validPlan(planId) nonReentrant whenNotPaused {
-        require(subscriptions[msg.sender][planId].status == SubscriptionStatus.NONE, "Already subscribed");
-        
-        SubscriptionPlan memory plan = subscriptionPlans[planId];
-        
-        paymentToken.safeTransferFrom(msg.sender, address(this), plan.yearlyRate);
+        require(
+            subscriptions[msg.sender][planId].status == SubscriptionStatus.NONE,
+            "Already subscribed"
+        );
 
-        paymentToken.safeIncreaseAllowance(address(morphoVault), plan.yearlyRate);
-        uint256 morphoShares = morphoVault.deposit(plan.yearlyRate, address(this));
+        SubscriptionPlan memory plan = subscriptionPlans[planId];
+
+        // Collect PYUSD from subscriber
+        paymentToken.safeTransferFrom(
+            msg.sender,
+            address(this),
+            plan.yearlyRate
+        );
+
+        // Deposit to Morpho vault for yield generation
+        paymentToken.safeIncreaseAllowance(
+            address(morphoVault),
+            plan.yearlyRate
+        );
+        uint256 morphoShares = morphoVault.deposit(
+            plan.yearlyRate,
+            address(this)
+        );
         totalYearlyDeposits += plan.yearlyRate;
 
         subscriptions[msg.sender][planId] = Subscription({
@@ -206,63 +287,121 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
 
         userActiveSubscriptions[msg.sender].push(planId);
 
-        emit SubscriptionCreated(msg.sender, planId, SubscriptionType.YEARLY, plan.yearlyRate, false);
+        emit SubscriptionCreated(
+            msg.sender,
+            planId,
+            SubscriptionType.YEARLY,
+            plan.yearlyRate,
+            false
+        );
     }
 
+    /**
+     * @dev Process monthly payment (called by backend for auto-pay users)
+     */
     function processMonthlyPayment(
         address user,
         uint256 planId
     ) external onlyBackend nonReentrant {
         Subscription storage sub = subscriptions[user][planId];
-        require(sub.status == SubscriptionStatus.ACTIVE, "Not active");
-        require(sub.subType == SubscriptionType.MONTHLY, "Not monthly");
-        require(sub.autoPayEnabled, "Auto-pay disabled");
-        require(block.timestamp >= sub.expirationTime - 1 days, "Too early");
+        require(
+            sub.status == SubscriptionStatus.ACTIVE,
+            "Subscription not active"
+        );
+        require(
+            sub.subType == SubscriptionType.MONTHLY,
+            "Not a monthly subscription"
+        );
+        require(sub.autoPayEnabled, "Auto-pay not enabled");
+        require(
+            block.timestamp >= sub.expirationTime - 1 days,
+            "Too early for payment"
+        );
 
         uint256 paymentAmount = sub.monthlyRate;
 
         if (sub.stakedAmount > 0) {
-            require(sub.stakedAmount >= paymentAmount, "Insufficient stake");
+            // Deduct from staked amount held in Morpho vault
+            require(
+                sub.stakedAmount >= paymentAmount,
+                "Insufficient staked amount"
+            );
+
+            uint256 burnedShares = morphoVault.withdraw(
+                paymentAmount,
+                address(this),
+                address(this)
+            );
+
+            sub.morphoShares -= burnedShares;
             sub.stakedAmount -= paymentAmount;
         } else {
+            // Transfer PYUSD directly from user's wallet
             paymentToken.safeTransferFrom(user, address(this), paymentAmount);
         }
 
         sub.lastPayment = block.timestamp;
         sub.expirationTime = block.timestamp + SECONDS_IN_MONTH;
 
-        emit MonthlyPaymentProcessed(user, planId, paymentAmount, block.timestamp);
+        // Forward payment to the business owner
+        paymentToken.safeTransfer(owner(), paymentAmount);
+
+        emit MonthlyPaymentProcessed(
+            user,
+            planId,
+            paymentAmount,
+            block.timestamp
+        );
     }
 
+    /**
+     * @dev Cancel subscription and handle refunds
+     */
     function cancelSubscription(uint256 planId) external nonReentrant {
         Subscription storage sub = subscriptions[msg.sender][planId];
-        require(sub.status == SubscriptionStatus.ACTIVE, "Not active");
+        require(
+            sub.status == SubscriptionStatus.ACTIVE,
+            "Subscription not active"
+        );
 
         sub.status = SubscriptionStatus.CANCELLED;
         uint256 refundAmount = 0;
 
         if (sub.subType == SubscriptionType.MONTHLY && sub.stakedAmount > 0) {
-            refundAmount = sub.stakedAmount;
+            // Refund remaining staked amount for monthly subscriptions
             if (sub.morphoShares > 0) {
-                uint256 assets = morphoVault.convertToAssets(sub.morphoShares);
-                morphoVault.withdraw(assets, address(this), address(this));
-                refundAmount = assets;
+                refundAmount = morphoVault.redeem(
+                    sub.morphoShares,
+                    address(this),
+                    address(this)
+                );
+            } else {
+                refundAmount = sub.stakedAmount;
             }
             sub.stakedAmount = 0;
             sub.morphoShares = 0;
         } else if (sub.subType == SubscriptionType.YEARLY) {
-            uint256 remainingTime = sub.expirationTime > block.timestamp ? 
-                sub.expirationTime - block.timestamp : 0;
+            // Calculate pro-rata refund for yearly subscriptions
+            uint256 remainingTime = sub.expirationTime > block.timestamp
+                ? sub.expirationTime - block.timestamp
+                : 0;
             if (remainingTime > 0) {
-                uint256 totalAssets = morphoVault.convertToAssets(sub.morphoShares);
+                uint256 totalAssets = morphoVault.convertToAssets(
+                    sub.morphoShares
+                );
                 refundAmount = (totalAssets * remainingTime) / SECONDS_IN_YEAR;
-                
-                morphoVault.withdraw(refundAmount, address(this), address(this));
+
+                morphoVault.withdraw(
+                    refundAmount,
+                    address(this),
+                    address(this)
+                );
                 totalYearlyDeposits -= refundAmount;
             }
             sub.morphoShares = 0;
         }
 
+        // Remove from active subscriptions
         _removeFromActiveSubscriptions(msg.sender, planId);
 
         if (refundAmount > 0) {
@@ -272,48 +411,108 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
         emit SubscriptionCancelled(msg.sender, planId, refundAmount);
     }
 
-    function withdrawYield(uint256 planId) external nonReentrant {
-        Subscription storage sub = subscriptions[msg.sender][planId];
-        require(sub.status == SubscriptionStatus.ACTIVE, "Not active");
-        require(sub.morphoShares > 0, "No shares");
+    // /**
+    //  * @dev Withdraw yield earned from staked amounts (for monthly subscribers)
+    //  */
+    // function withdrawYield(uint256 planId) external nonReentrant {
+    //     Subscription storage sub = subscriptions[msg.sender][planId];
+    //     require(
+    //         sub.status == SubscriptionStatus.ACTIVE,
+    //         "Subscription not active"
+    //     );
+    //     require(sub.morphoShares > 0, "No staked amount");
 
-        uint256 currentAssets = morphoVault.convertToAssets(sub.morphoShares);
-        require(currentAssets > sub.stakedAmount, "No yield");
+    //     uint256 currentAssets = morphoVault.convertToAssets(sub.morphoShares);
+    //     require(currentAssets > sub.stakedAmount, "No yield to withdraw");
 
-        uint256 yieldAmount = currentAssets - sub.stakedAmount;
-        morphoVault.withdraw(yieldAmount, address(this), address(this));
+    //     uint256 yieldAmount = currentAssets - sub.stakedAmount;
+    //     uint256 burnedShares = morphoVault.withdraw(
+    //         yieldAmount,
+    //         address(this),
+    //         address(this)
+    //     );
 
-        sub.morphoShares = morphoVault.balanceOf(address(this));
+    //     paymentToken.safeTransfer(msg.sender, yieldAmount);
 
-        paymentToken.safeTransfer(msg.sender, yieldAmount);
+    //     // Reduce stored shares to reflect withdrawn yield
+    //     sub.morphoShares -= burnedShares;
 
-        emit YieldWithdrawn(msg.sender, planId, yieldAmount);
+    //     emit YieldWithdrawn(msg.sender, planId, yieldAmount);
+    // }
+
+    /**
+     * @dev Business owner can withdraw funds from yearly subscriptions
+     */
+    function businessOwnerWithdraw(
+        uint256 amount
+    ) external onlyOwner nonReentrant {
+        uint256 withdrawableAssets = morphoVault.maxWithdraw(address(this));
+        require(amount <= withdrawableAssets, "Insufficient vault balance");
+
+        morphoVault.withdraw(amount, address(this), address(this));
+
+        if (amount >= totalYearlyDeposits) {
+            totalYearlyDeposits = 0;
+        } else {
+            totalYearlyDeposits -= amount;
+        }
+
+        paymentToken.safeTransfer(owner(), amount);
+
+        emit BusinessOwnerWithdrawal(amount, totalYearlyDeposits);
     }
 
-    function getSubscription(address user, uint256 planId) external view returns (Subscription memory) {
+    /**
+     * @dev Get subscription details for a user and plan
+     */
+    function getSubscription(
+        address user,
+        uint256 planId
+    ) external view returns (Subscription memory) {
         return subscriptions[user][planId];
     }
 
-    function getUserActiveSubscriptions(address user) external view returns (uint256[] memory) {
+    /**
+     * @dev Get user's active subscriptions
+     */
+    function getUserActiveSubscriptions(
+        address user
+    ) external view returns (uint256[] memory) {
         return userActiveSubscriptions[user];
     }
 
+    /**
+     * @dev Check if subscription is expired and update status
+     */
     function checkAndUpdateExpiration(address user, uint256 planId) external {
         Subscription storage sub = subscriptions[user][planId];
-        if (sub.status == SubscriptionStatus.ACTIVE && block.timestamp > sub.expirationTime) {
+        if (
+            sub.status == SubscriptionStatus.ACTIVE &&
+            block.timestamp > sub.expirationTime
+        ) {
             sub.status = SubscriptionStatus.EXPIRED;
             _removeFromActiveSubscriptions(user, planId);
         }
     }
 
+    /**
+     * @dev Set backend address
+     */
     function setBackend(address _backend) external onlyOwner {
         backend = _backend;
     }
 
+    /**
+     * @dev Toggle subscription plan active status
+     */
     function togglePlanStatus(uint256 planId) external onlyOwner {
-        subscriptionPlans[planId].isActive = !subscriptionPlans[planId].isActive;
+        subscriptionPlans[planId].isActive = !subscriptionPlans[planId]
+            .isActive;
     }
 
+    /**
+     * @dev Emergency pause/unpause
+     */
     function pause() external onlyOwner {
         _pause();
     }
@@ -322,7 +521,13 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
         _unpause();
     }
 
-    function _removeFromActiveSubscriptions(address user, uint256 planId) internal {
+    /**
+     * @dev Internal function to remove plan from user's active subscriptions
+     */
+    function _removeFromActiveSubscriptions(
+        address user,
+        uint256 planId
+    ) internal {
         uint256[] storage activeSubs = userActiveSubscriptions[user];
         for (uint256 i = 0; i < activeSubs.length; i++) {
             if (activeSubs[i] == planId) {
@@ -332,4 +537,6 @@ contract SubscriptionManager is Ownable, ReentrancyGuard, Pausable {
             }
         }
     }
+
+    // No native token support
 }
