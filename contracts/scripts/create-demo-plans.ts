@@ -2,7 +2,7 @@ import hre from 'hardhat';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { parseEther } from 'viem';
+import { parseUnits } from 'viem';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -59,14 +59,14 @@ async function main() {
 
   console.log(`Using account: ${deployer.account.address}\n`);
 
-  // Create each plan
+  // Create each plan (PyUSD uses 6 decimals)
   for (const plan of plans) {
     console.log(`Creating: ${plan.name}`);
     console.log(`  Monthly: $${plan.monthly} | Yearly: $${plan.yearly}`);
 
     const hash = await subscriptionManager.write.createSubscriptionPlan([
-      parseEther(plan.monthly),
-      parseEther(plan.yearly),
+      parseUnits(plan.monthly, 6), // PyUSD has 6 decimals
+      parseUnits(plan.yearly, 6),
       plan.name,
     ]);
 
