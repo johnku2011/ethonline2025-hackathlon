@@ -27,7 +27,7 @@ export function GymPlanCard({
     >
       {isPopular && (
         <div className="absolute top-0 right-0 bg-orange-500 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
-          最受歡迎
+          Most Popular
         </div>
       )}
 
@@ -63,7 +63,7 @@ export function GymPlanCard({
             isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
           }`}
         >
-          {isLoading ? '處理中...' : '選擇此方案'}
+          {isLoading ? 'Processing...' : 'Select This Plan'}
         </button>
       </div>
     </div>
