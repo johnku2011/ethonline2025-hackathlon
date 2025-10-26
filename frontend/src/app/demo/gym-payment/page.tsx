@@ -1,8 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useAccount, useChainId } from 'wagmi';
+import { parseUnits } from 'viem';
 import { GymHeader } from '@/components/demo/GymHeader';
 import { GymPlanCard } from '@/components/demo/GymPlanCard';
+import { PaymentModal } from '@/components/demo/PaymentModal';
+import { useSubscriptionManager } from '@/hooks/useSubscriptionManager';
+import { usePyUSDBalance } from '@/lib/contracts/pyusd';
+import type { NetworkId } from '@/lib/contracts';
 
 // 定義會員計劃
 const GYM_PLANS = [
@@ -52,12 +58,60 @@ const GYM_PLANS = [
 ];
 
 export default function GymPaymentPage() {
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const { address } = useAccount();
+  const chainId = useChainId();
+  const validChainId = (chainId || 31337) as NetworkId;
+
+  const { approvePyUSD, subscribeMonthly } = useSubscriptionManager(validChainId);
+  const { data: balance } = usePyUSDBalance(validChainId, address);
+
+  const selectedPlan = GYM_PLANS.find((p) => p.id === selectedPlanId);
 
   const handleSelectPlan = (planId: string) => {
-    setSelectedPlan(planId);
-    // Payment modal will be implemented in next commit
-    console.log('Selected plan:', planId);
+    if (!address) {
+      alert('請先連接錢包！');
+      return;
+    }
+    setSelectedPlanId(planId);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!selectedPlan) return;
+
+    try {
+      setIsProcessing(true);
+      const amount = parseUnits(selectedPlan.price, 6);
+
+      // Check balance
+      if (!balance || balance < amount) {
+        alert(
+          `餘額不足！您需要 ${selectedPlan.price} PYUSD，但只有 ${balance ? (Number(balance) / 1e6).toFixed(2) : '0'} PYUSD。`
+        );
+        return;
+      }
+
+      // Approve PyUSD
+      console.log('Approving PyUSD...');
+      await approvePyUSD(amount);
+
+      // Subscribe (using plan ID 0 for demo)
+      console.log('Subscribing to plan...');
+      await subscribeMonthly(0n, false);
+
+      alert('訂閱成功！歡迎加入 FitLife Gym！');
+      setIsModalOpen(false);
+      setSelectedPlanId(null);
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      alert(`付款失敗：${error.message || '未知錯誤'}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -115,12 +169,28 @@ export default function GymPaymentPage() {
                 features={plan.features}
                 isPopular={plan.isPopular}
                 onSelect={() => handleSelectPlan(plan.id)}
-                isLoading={selectedPlan === plan.id}
+                isLoading={false}
               />
             ))}
           </div>
         </div>
       </section>
+
+      {/* Payment Modal */}
+      {selectedPlan && (
+        <PaymentModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedPlanId(null);
+          }}
+          planName={selectedPlan.name}
+          planPrice={selectedPlan.price}
+          onConfirm={handleConfirmPayment}
+          isProcessing={isProcessing}
+          balance={balance}
+        />
+      )}
     </div>
   );
 }
