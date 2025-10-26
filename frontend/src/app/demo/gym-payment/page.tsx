@@ -99,9 +99,10 @@ export default function GymPaymentPage() {
       console.log('Approving PyUSD...');
       await approvePyUSD(amount);
 
-      // Subscribe (using plan ID 0 for demo)
+      // Subscribe (using plan ID 1 for demo)
+      // Note: Plan IDs start from 1 in the contract
       console.log('Subscribing to plan...');
-      await subscribeMonthly(0n, false);
+      await subscribeMonthly(1n, false);
 
       alert('Subscription successful! Welcome to FitLife Gym!');
       setIsModalOpen(false);
