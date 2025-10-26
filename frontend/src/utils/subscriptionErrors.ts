@@ -80,8 +80,8 @@ const strategies: ErrorStrategy[] = [
  * @param error - Error object or string
  * @returns Formatted error message
  */
-export function handleSubscriptionError(error: any): string {
-  const errorMessage = error?.message || error?.toString() || 'Unknown error';
+export function handleSubscriptionError(error: unknown): string {
+  const errorMessage = (error as Error)?.message || String(error) || 'Unknown error';
   
   // Use the first matching strategy
   const strategy = strategies.find(s => s.match(errorMessage));
@@ -92,8 +92,8 @@ export function handleSubscriptionError(error: any): string {
 /**
  * Check if the error is an "Already subscribed" error
  */
-export function isAlreadySubscribedError(error: any): boolean {
-  const errorMessage = error?.message || error?.toString() || '';
+export function isAlreadySubscribedError(error: unknown): boolean {
+  const errorMessage = (error as Error)?.message || String(error) || '';
   return alreadySubscribedStrategy.match(errorMessage);
 }
 

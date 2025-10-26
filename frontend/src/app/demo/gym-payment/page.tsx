@@ -81,10 +81,10 @@ export default function GymPaymentPage() {
       alert(
         'Successfully minted 1000 PyUSD! Please wait a few seconds for the balance to update.'
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Mint error:', error);
       const errorMessage =
-        error?.message || error?.toString() || 'Unknown error';
+        (error as Error)?.message || String(error) || 'Unknown error';
       alert(`Failed to mint PyUSD: ${errorMessage}`);
     } finally {
       setIsMinting(false);
@@ -114,7 +114,7 @@ export default function GymPaymentPage() {
       alert('✅ Subscription cancelled successfully!');
       // Refresh subscription data
       refetchSubscriptions();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Cancel subscription error:', error);
       const errorMessage = handleSubscriptionError(error);
       alert(errorMessage);
@@ -182,7 +182,7 @@ export default function GymPaymentPage() {
       
       // Refresh subscription data to show updated status
       refetchSubscriptions();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Payment error:', error);
 
       // Use Strategy Pattern for error handling
