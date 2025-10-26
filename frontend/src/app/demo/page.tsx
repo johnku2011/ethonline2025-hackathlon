@@ -27,7 +27,7 @@ export default function DemoPage() {
 
           <div className="bg-white rounded-xl p-6 mb-8 text-left">
             <h3 className="font-semibold text-gray-900 mb-4">
-              What you'll be able to do:
+              What you&apos;ll be able to do:
             </h3>
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start">

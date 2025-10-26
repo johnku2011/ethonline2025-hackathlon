@@ -16,7 +16,7 @@ interface SubscriptionCardProps {
 }
 
 export function SubscriptionCard({
-  planId,
+  // planId is kept in interface for future use
   planName,
   monthlyRate,
   yearlyRate,

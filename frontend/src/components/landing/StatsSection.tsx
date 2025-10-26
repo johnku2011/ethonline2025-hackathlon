@@ -47,7 +47,7 @@ export function StatsSection() {
             Platform Statistics
           </h2>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-            Real-time metrics from our platform (Testnet Demo)
+            Live metrics populate once the Arbitrum Sepolia sandbox spins up
           </p>
         </div>
 
@@ -76,8 +76,8 @@ export function StatsSection() {
         {/* Note */}
         <div className="mt-12 text-center">
           <p className="text-blue-100 text-sm">
-            💡 These stats will update automatically once contracts are deployed
-            on Arbitrum Sepolia testnet
+            💡 Production deployment will surface real PyUSD and Morpho yield
+            totals across user and provider dashboards
           </p>
         </div>
       </div>

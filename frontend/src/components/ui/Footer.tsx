@@ -11,10 +11,10 @@ export function Footer() {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">P</span>
               </div>
-              <span className="font-bold text-xl text-white">PyUSD Subs</span>
+              <span className="font-bold text-xl text-white">Pay2Earn</span>
             </div>
             <p className="text-sm text-gray-400">
-              Revolutionizing subscriptions with Web3 and earning rewards.
+              Subscriptions that pay you back through PyUSD yields and Morpho optimization.
             </p>
           </div>
 
@@ -27,7 +27,7 @@ export function Footer() {
                   href="/marketplace"
                   className="hover:text-white transition-colors"
                 >
-                  Marketplace
+                  Browse Partners
                 </Link>
               </li>
               <li>
@@ -35,15 +35,7 @@ export function Footer() {
                   href="/dashboard"
                   className="hover:text-white transition-colors"
                 >
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/demo"
-                  className="hover:text-white transition-colors"
-                >
-                  Try Demo
+                  User Dashboard
                 </Link>
               </li>
               <li>
@@ -51,7 +43,15 @@ export function Footer() {
                   href="/provider"
                   className="hover:text-white transition-colors"
                 >
-                  For Providers
+                  Provider Portal
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/demo"
+                  className="hover:text-white transition-colors"
+                >
+                  Sandbox Demo
                 </Link>
               </li>
             </ul>
@@ -120,7 +120,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-gray-400">
-            © 2025 PyUSD Subscription Platform. Built for ETHGlobal Hackathon.
+            © 2025 Pay2Earn. Built for ETHGlobal Hackathon 2025.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0 text-sm">
             <a href="#" className="hover:text-white transition-colors">

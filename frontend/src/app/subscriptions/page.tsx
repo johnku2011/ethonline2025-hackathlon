@@ -77,10 +77,9 @@ export default function SubscriptionsPage() {
       await subscribeMonthly(planId, stakeYearly);
 
       console.log('Subscription successful!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Subscription error:', error);
-      const errorMessage =
-        error?.message || error?.toString() || 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : String(error);
       alert(
         `Subscription failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
       );
@@ -129,10 +128,9 @@ export default function SubscriptionsPage() {
       await subscribeYearly(planId);
 
       console.log('Subscription successful!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Subscription error:', error);
-      const errorMessage =
-        error?.message || error?.toString() || 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : String(error);
       alert(
         `Subscription failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
       );

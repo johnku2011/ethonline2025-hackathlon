@@ -14,36 +14,39 @@ export function HeroSection() {
           {/* Badge */}
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-8">
             <span className="w-2 h-2 bg-blue-600 rounded-full mr-2 animate-pulse" />
-            Built on Arbitrum with PyUSD
+            Built on Arbitrum · Powered by PyUSD
           </div>
 
           {/* Headline */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Earn While You
+            Subscriptions That
             <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Subscribe
+              Pay You Back
             </span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Subscribe yearly with PyUSD and earn 4.5% APY rewards. Complete the
-            year, get your money back plus interest. It's that simple.
+            Pay2Earn lets you pay yearly subscriptions in PayPal&apos;s PyUSD, earn at
+            least 4% APY from PyUSD rewards, and capture extra yield as we deploy
+            funds into Morpho vaults. Finish the year, withdraw your principal
+            plus interest; cancel early and the yield automatically rewards the
+            provider.
           </p>
 
           {/* Key Stats Badges */}
           <div className="flex flex-wrap justify-center gap-4 mb-12">
             <div className="bg-white rounded-lg px-6 py-3 shadow-md">
-              <div className="text-2xl font-bold text-blue-600">4.5% APY</div>
-              <div className="text-sm text-gray-600">Interest Rewards</div>
+              <div className="text-2xl font-bold text-blue-600">4%+ APY</div>
+              <div className="text-sm text-gray-600">Paid Back to Users</div>
             </div>
             <div className="bg-white rounded-lg px-6 py-3 shadow-md">
-              <div className="text-2xl font-bold text-green-600">100%</div>
-              <div className="text-sm text-gray-600">Refundable</div>
+              <div className="text-2xl font-bold text-green-600">Morpho</div>
+              <div className="text-sm text-gray-600">Vault Yield Boost</div>
             </div>
             <div className="bg-white rounded-lg px-6 py-3 shadow-md">
-              <div className="text-2xl font-bold text-purple-600">0 Fees</div>
-              <div className="text-sm text-gray-600">No Hidden Costs</div>
+              <div className="text-2xl font-bold text-purple-600">Arbitrum</div>
+              <div className="text-sm text-gray-600">Fast, Low-Cost UX</div>
             </div>
           </div>
 
@@ -56,7 +59,12 @@ export function HeroSection() {
             </Link>
             <Link href="/marketplace">
               <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                Browse Subscriptions
+                Browse Partners
+              </Button>
+            </Link>
+            <Link href="/provider">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                I&apos;m a Provider
               </Button>
             </Link>
           </div>
@@ -69,7 +77,9 @@ export function HeroSection() {
               <span className="text-gray-300">•</span>
               <span className="font-semibold text-gray-700">Arbitrum</span>
               <span className="text-gray-300">•</span>
-              <span className="font-semibold text-gray-700">Solidity</span>
+              <span className="font-semibold text-gray-700">Morpho</span>
+              <span className="text-gray-300">•</span>
+              <span className="font-semibold text-gray-700">RainbowKit</span>
             </div>
           </div>
         </div>

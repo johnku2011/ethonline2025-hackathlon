@@ -10,16 +10,18 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'PyUSD Subscription Platform - Earn While You Subscribe',
+  title: 'Pay2Earn - Subscriptions That Pay You Back',
   description:
-    'A decentralized subscription platform where users earn 4.5% APY on yearly subscriptions. Complete the year, get rewarded. Built on Arbitrum with PyUSD.',
+    'Pay yearly subscriptions in PyUSD, earn at least 4% APY from PyUSD rewards plus Morpho vault yields. Complete the year and withdraw your principal plus interest. Built on Arbitrum.',
   keywords: [
     'PyUSD',
     'Arbitrum',
+    'Morpho',
     'subscription',
     'DeFi',
     'Web3',
     'crypto rewards',
+    'Pay2Earn',
   ],
 };
 
