@@ -7,8 +7,7 @@ import { GymHeader } from '@/components/demo/GymHeader';
 import { GymPlanCard } from '@/components/demo/GymPlanCard';
 import { PaymentModal } from '@/components/demo/PaymentModal';
 import { PoweredByBadge } from '@/components/demo/PoweredByBadge';
-import { useSubscriptionManager } from '@/hooks/useSubscriptionManager';
-import { usePyUSDBalance } from '@/lib/contracts/pyusd';
+import { useSubscriptionManager, usePyUSDBalance } from '@/hooks/useSubscriptionManager';
 import type { NetworkId } from '@/lib/contracts';
 
 // 定義會員計劃
