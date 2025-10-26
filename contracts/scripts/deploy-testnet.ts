@@ -1,10 +1,13 @@
 import hre from 'hardhat';
-import { ignition } from 'hardhat';
 import MockPyUSDModule from '../ignition/modules/MockPyUSD';
 import MockMorphoVaultModule from '../ignition/modules/MockMorphoVault';
 import SubscriptionManagerModule from '../ignition/modules/SubscriptionManager';
 import { writeFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Deploy all contracts to Arbitrum Sepolia Testnet
@@ -13,46 +16,51 @@ import { join } from 'path';
 async function main() {
   console.log('🚀 Deploying to Arbitrum Sepolia Testnet...\n');
 
-  const network = hre.network.name;
-  const chainId = hre.network.config.chainId || 421614;
+  // Connect to network
+  const connection = await hre.network.connect();
+  const [deployer] = await connection.viem.getWalletClients();
 
-  console.log('Network:', network);
+  const chainId = 421614; // Arbitrum Sepolia
+
+  console.log('Network: arbitrumSepolia');
   console.log('Chain ID:', chainId);
-
-  // Get deployer account
-  const [deployer] = await hre.viem.getWalletClients();
   console.log('Deployer:', deployer.account.address);
 
   // 1. Deploy MockPyUSD
   console.log('\n📝 Step 1: Deploying MockPyUSD...');
-  const { pyusd } = await ignition.deploy(MockPyUSDModule);
-  console.log('✅ MockPyUSD:', await pyusd.address);
+  const { pyusd } = await connection.ignition.deploy(MockPyUSDModule);
+  console.log('✅ MockPyUSD:', pyusd.address);
 
   // 2. Deploy MockMorphoVault
   console.log('\n📝 Step 2: Deploying MockMorphoVault...');
-  const { morphoVault } = await ignition.deploy(MockMorphoVaultModule, {
-    parameters: {
-      MockMorphoVaultModule: {
-        pyusdAddress: await pyusd.address,
-      },
-    },
-  });
-  console.log('✅ MockMorphoVault:', await morphoVault.address);
-
-  // 3. Deploy SubscriptionManager
-  console.log('\n📝 Step 3: Deploying SubscriptionManager...');
-  const { subscriptionManager } = await ignition.deploy(
-    SubscriptionManagerModule,
+  const { morphoVault } = await connection.ignition.deploy(
+    MockMorphoVaultModule,
     {
       parameters: {
-        SubscriptionManagerModule: {
-          pyusdAddress: await pyusd.address,
-          feeCollector: deployer.account.address,
+        MockMorphoVaultModule: {
+          pyusdAddress: pyusd.address,
         },
       },
     }
   );
-  console.log('✅ SubscriptionManager:', await subscriptionManager.address);
+  console.log('✅ MockMorphoVault:', morphoVault.address);
+
+  // 3. Deploy SubscriptionManager
+  console.log('\n📝 Step 3: Deploying SubscriptionManager...');
+  const { subscriptionManager } = await connection.ignition.deploy(
+    SubscriptionManagerModule,
+    {
+      parameters: {
+        SubscriptionManagerModule: {
+          pyusdAddress: pyusd.address,
+          morphoVaultAddress: morphoVault.address,
+          backend: deployer.account.address,
+          owner: deployer.account.address,
+        },
+      },
+    }
+  );
+  console.log('✅ SubscriptionManager:', subscriptionManager.address);
 
   // Save deployment addresses
   const deployment = {
@@ -61,14 +69,14 @@ async function main() {
     timestamp: new Date().toISOString(),
     deployer: deployer.account.address,
     contracts: {
-      pyusd: await pyusd.address,
-      morphoVault: await morphoVault.address,
-      subscriptionManager: await subscriptionManager.address,
+      pyusd: pyusd.address,
+      morphoVault: morphoVault.address,
+      subscriptionManager: subscriptionManager.address,
     },
     explorer: {
-      pyusd: `https://sepolia.arbiscan.io/address/${await pyusd.address}`,
-      morphoVault: `https://sepolia.arbiscan.io/address/${await morphoVault.address}`,
-      subscriptionManager: `https://sepolia.arbiscan.io/address/${await subscriptionManager.address}`,
+      pyusd: `https://sepolia.arbiscan.io/address/${pyusd.address}`,
+      morphoVault: `https://sepolia.arbiscan.io/address/${morphoVault.address}`,
+      subscriptionManager: `https://sepolia.arbiscan.io/address/${subscriptionManager.address}`,
     },
   };
 

@@ -25,7 +25,6 @@ export const SUBSCRIPTION_MANAGER_ABI = [
     name: 'subscribeMonthly',
     inputs: [
       { name: 'planId', type: 'uint256' },
-      { name: 'enableAutoPay', type: 'bool' },
       { name: 'stakeYearlyAmount', type: 'bool' },
     ],
     outputs: [],
@@ -45,13 +44,7 @@ export const SUBSCRIPTION_MANAGER_ABI = [
     outputs: [],
     stateMutability: 'nonpayable',
   },
-  {
-    type: 'function',
-    name: 'withdrawYield',
-    inputs: [{ name: 'planId', type: 'uint256' }],
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
+  // Note: withdrawYield removed in Lab version - yield returned on cancellation
   {
     type: 'function',
     name: 'getSubscription',

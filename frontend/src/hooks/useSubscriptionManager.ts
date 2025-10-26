@@ -1,9 +1,11 @@
 import {
   useReadContract,
+  useReadContracts,
   useWriteContract,
   useWaitForTransactionReceipt,
 } from 'wagmi';
 import { parseUnits } from 'viem';
+import { useMemo } from 'react';
 import {
   SUBSCRIPTION_MANAGER_ABI,
   PYUSD_ABI,
@@ -31,20 +33,22 @@ export function useSubscriptionManager(chainId: NetworkId) {
       abi: PYUSD_ABI,
       functionName: 'approve',
       args: [subscriptionManagerAddress, amount],
+      value: 0n,
     });
   };
 
   // Subscribe to monthly plan
+  // Note: Auto-pay is now enabled by default in the Lab version contract
   const subscribeMonthly = async (
     planId: bigint,
-    enableAutoPay: boolean,
     stakeYearlyAmount: boolean
   ) => {
     return writeContract({
       address: subscriptionManagerAddress,
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'subscribeMonthly',
-      args: [planId, enableAutoPay, stakeYearlyAmount],
+      args: [planId, stakeYearlyAmount],
+      value: 0n,
     });
   };
 
@@ -55,6 +59,7 @@ export function useSubscriptionManager(chainId: NetworkId) {
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'subscribeYearly',
       args: [planId],
+      value: 0n,
     });
   };
 
@@ -65,25 +70,29 @@ export function useSubscriptionManager(chainId: NetworkId) {
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'cancelSubscription',
       args: [planId],
+      value: 0n,
     });
   };
 
-  // Withdraw yield
-  const withdrawYield = async (planId: bigint) => {
+  // Mint PyUSD for testing
+  const mintPyUSD = async (to: `0x${string}`, amount: bigint) => {
     return writeContract({
-      address: subscriptionManagerAddress,
-      abi: SUBSCRIPTION_MANAGER_ABI,
-      functionName: 'withdrawYield',
-      args: [planId],
+      address: pyusdAddress,
+      abi: PYUSD_ABI,
+      functionName: 'mint',
+      args: [to, amount],
+      value: 0n,
     });
   };
+
+  // Note: withdrawYield removed in Lab version - yield is automatically returned on cancellation
 
   return {
     approvePyUSD,
     subscribeMonthly,
     subscribeYearly,
     cancelSubscription,
-    withdrawYield,
+    mintPyUSD,
     isPending,
     isConfirming,
     isSuccess,
@@ -148,6 +157,107 @@ export function useSubscriptionPlan(chainId: NetworkId, planId?: bigint) {
     args: planId !== undefined ? [planId] : undefined,
     query: {
       enabled: planId !== undefined,
+    },
+  });
+}
+
+// Subscription plan type
+export interface SubscriptionPlan {
+  planId: bigint;
+  monthlyRate: bigint;
+  yearlyRate: bigint;
+  isActive: boolean;
+  name: string;
+}
+
+// Read all active subscription plans
+export function useAllPlans(chainId: NetworkId) {
+  const subscriptionManagerAddress = getContractAddress(
+    chainId,
+    'subscriptionManager'
+  );
+
+  // Batch query planId 1-10
+  const { data, isLoading, error } = useReadContracts({
+    contracts: Array.from({ length: 10 }, (_, i) => ({
+      address: subscriptionManagerAddress,
+      abi: SUBSCRIPTION_MANAGER_ABI,
+      functionName: 'subscriptionPlans',
+      args: [BigInt(i + 1)],
+    })),
+    query: {
+      // Allow individual queries to fail without breaking the whole request
+      // This handles cases where some planIds don't exist yet
+      select: (data) => data,
+    },
+  });
+
+  // Filter and format active plans
+  const plans = useMemo(() => {
+    if (!data) return [];
+
+    return data
+      .map((result, index) => {
+        if (result.status !== 'success' || !result.result) return null;
+
+        const [monthlyRate, yearlyRate, isActive, name] = result.result;
+
+        return {
+          planId: BigInt(index + 1),
+          monthlyRate,
+          yearlyRate,
+          isActive,
+          name,
+        } as SubscriptionPlan;
+      })
+      .filter(
+        (plan): plan is SubscriptionPlan => plan !== null && plan.isActive
+      );
+  }, [data]);
+
+  return {
+    plans,
+    isLoading,
+    error,
+  };
+}
+
+// Read PyUSD balance
+export function usePyUSDBalance(
+  chainId: NetworkId,
+  userAddress?: `0x${string}`
+) {
+  const pyusdAddress = getContractAddress(chainId, 'pyusd');
+
+  return useReadContract({
+    address: pyusdAddress,
+    abi: PYUSD_ABI,
+    functionName: 'balanceOf',
+    args: userAddress ? [userAddress] : undefined,
+    query: {
+      enabled: !!userAddress,
+    },
+  });
+}
+
+// Read PyUSD allowance
+export function usePyUSDAllowance(
+  chainId: NetworkId,
+  userAddress?: `0x${string}`
+) {
+  const pyusdAddress = getContractAddress(chainId, 'pyusd');
+  const subscriptionManagerAddress = getContractAddress(
+    chainId,
+    'subscriptionManager'
+  );
+
+  return useReadContract({
+    address: pyusdAddress,
+    abi: PYUSD_ABI,
+    functionName: 'allowance',
+    args: userAddress ? [userAddress, subscriptionManagerAddress] : undefined,
+    query: {
+      enabled: !!userAddress,
     },
   });
 }

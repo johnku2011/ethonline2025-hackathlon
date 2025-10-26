@@ -11,7 +11,8 @@ interface SubscriptionCardProps {
   isActive: boolean;
   onSubscribeMonthly: () => void;
   onSubscribeYearly: () => void;
-  isPending?: boolean;
+  isMonthlyPending?: boolean;
+  isYearlyPending?: boolean;
 }
 
 export function SubscriptionCard({
@@ -22,7 +23,8 @@ export function SubscriptionCard({
   isActive,
   onSubscribeMonthly,
   onSubscribeYearly,
-  isPending,
+  isMonthlyPending,
+  isYearlyPending,
 }: SubscriptionCardProps) {
   const monthlyPriceFormatted = formatUnits(monthlyRate, 6);
   const yearlyPriceFormatted = formatUnits(yearlyRate, 6);
@@ -53,10 +55,10 @@ export function SubscriptionCard({
           </div>
           <Button
             onClick={onSubscribeMonthly}
-            disabled={!isActive || isPending}
+            disabled={!isActive || isMonthlyPending}
             className="px-4 py-2"
           >
-            {isPending ? 'Processing...' : 'Subscribe'}
+            {isMonthlyPending ? 'Processing...' : 'Subscribe'}
           </Button>
         </div>
 
@@ -76,11 +78,11 @@ export function SubscriptionCard({
             </div>
             <Button
               onClick={onSubscribeYearly}
-              disabled={!isActive || isPending}
+              disabled={!isActive || isYearlyPending}
               className="px-4 py-2"
               variant="secondary"
             >
-              {isPending ? 'Processing...' : 'Subscribe Yearly'}
+              {isYearlyPending ? 'Processing...' : 'Subscribe Yearly'}
             </Button>
           </div>
         </div>

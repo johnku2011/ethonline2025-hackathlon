@@ -5,19 +5,20 @@ const PyUSDSubscriptionModule = buildModule('PyUSDSubscriptionModule', (m) => {
   const pyusd = m.contract('MockPyUSD', []);
 
   // Deploy MockMorphoVault with PyUSD
-  const morphoVault = m.contract('MockMorphoVault', [pyusd]);
+  const morphoVault = m.contract(
+    'contracts/MockMorphoVault.sol:MockMorphoVault',
+    [pyusd]
+  );
 
   // Parameters for SubscriptionManager
   const backend = m.getParameter('backend');
   const owner = m.getParameter('owner');
 
   // Deploy SubscriptionManager
-  const subscriptionManager = m.contract('SubscriptionManager', [
-    pyusd,
-    morphoVault,
-    backend,
-    owner,
-  ]);
+  const subscriptionManager = m.contract(
+    'contracts/SubscriptionManager.sol:SubscriptionManager',
+    [pyusd, morphoVault, backend, owner]
+  );
 
   return {
     pyusd,
