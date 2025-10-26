@@ -1,8 +1,65 @@
 'use client';
 
+import { useState } from 'react';
 import { GymHeader } from '@/components/demo/GymHeader';
+import { GymPlanCard } from '@/components/demo/GymPlanCard';
+
+// 定義會員計劃
+const GYM_PLANS = [
+  {
+    id: 'basic',
+    name: 'Basic',
+    price: '29',
+    period: '月',
+    features: [
+      '無限次使用健身房',
+      '基礎器材訓練',
+      '淋浴間使用',
+      '週一至週五 6AM-10PM',
+      '免費 WiFi',
+    ],
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    price: '49',
+    period: '月',
+    features: [
+      'Basic 所有功能',
+      '團體課程（瑜伽、飛輪、有氧）',
+      '每月 2 次私人教練課程',
+      '全天候 24/7 開放',
+      '免費停車',
+      '蛋白質飲品折扣',
+    ],
+    isPopular: true,
+  },
+  {
+    id: 'vip',
+    name: 'VIP',
+    price: '99',
+    period: '月',
+    features: [
+      'Premium 所有功能',
+      '無限私人教練課程',
+      '專屬 VIP 訓練區',
+      '營養師諮詢',
+      '按摩服務',
+      '免費運動服裝租借',
+      '專屬停車位',
+    ],
+  },
+];
 
 export default function GymPaymentPage() {
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+
+  const handleSelectPlan = (planId: string) => {
+    setSelectedPlan(planId);
+    // Payment modal will be implemented in next commit
+    console.log('Selected plan:', planId);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <GymHeader />
@@ -47,9 +104,20 @@ export default function GymPaymentPage() {
               所有計劃都支援使用 PyUSD 安全付款
             </p>
           </div>
-          {/* Plan cards will be added here */}
-          <div className="text-center text-gray-500 py-12">
-            計劃卡片即將推出...
+          {/* Plan Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {GYM_PLANS.map((plan) => (
+              <GymPlanCard
+                key={plan.id}
+                name={plan.name}
+                price={plan.price}
+                period={plan.period}
+                features={plan.features}
+                isPopular={plan.isPopular}
+                onSelect={() => handleSelectPlan(plan.id)}
+                isLoading={selectedPlan === plan.id}
+              />
+            ))}
           </div>
         </div>
       </section>
