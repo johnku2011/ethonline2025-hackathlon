@@ -15,6 +15,10 @@ export default function SubscriptionsPage() {
   const { address, chainId } = useAccount();
   // Note: enableAutoPay is now default true in Lab version, removed UI control
   const [stakeYearly, setStakeYearly] = useState(false);
+  // Track loading state for each button independently
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>(
+    {}
+  );
 
   const validChainId = (
     chainId === 31337 || chainId === 421614 || chainId === 42161
@@ -34,38 +38,106 @@ export default function SubscriptionsPage() {
   const { data: balance } = usePyUSDBalance(validChainId, address);
 
   const handleSubscribeMonthly = async (planId: bigint, amount: bigint) => {
+    const key = `${planId}-monthly`;
     try {
-      // Check balance before subscribing
-      if (!balance || balance < amount) {
-        alert('Insufficient PyUSD balance. Please mint PyUSD first.');
+      setLoadingStates((prev) => ({ ...prev, [key]: true }));
+
+      // Network mismatch warning
+      if (chainId && chainId !== validChainId) {
+        alert(
+          `⚠️ Network Mismatch Detected!\n\n` +
+            `Your wallet is connected to chain ID: ${chainId}\n` +
+            `But the app is using chain ID: ${validChainId}\n\n` +
+            `Please switch your wallet to the correct network:\n` +
+            `• Localhost (31337) for local development\n` +
+            `• Arbitrum Sepolia (421614) for testnet\n` +
+            `• Arbitrum One (42161) for mainnet`
+        );
         return;
       }
 
+      // Check balance before subscribing
+      if (!balance || balance < amount) {
+        alert(
+          `Insufficient PyUSD balance. You have ${formatUnits(balance || BigInt(0), 6)} PYUSD but need ${formatUnits(amount, 6)} PYUSD. Please mint more PyUSD first.`
+        );
+        return;
+      }
+
+      console.log('Subscribe Monthly - Plan ID:', planId);
+      console.log('Amount needed:', formatUnits(amount, 6), 'PYUSD');
+      console.log('Stake yearly:', stakeYearly);
+
       // First approve PyUSD spending
+      console.log('Approving PyUSD spending...');
       await approvePyUSD(amount);
+
+      console.log('Approval successful, subscribing...');
       // Then subscribe (auto-pay is default enabled)
       await subscribeMonthly(planId, stakeYearly);
-    } catch (error) {
+
+      console.log('Subscription successful!');
+    } catch (error: any) {
       console.error('Subscription error:', error);
-      alert('Subscription failed. Please try again.');
+      const errorMessage =
+        error?.message || error?.toString() || 'Unknown error';
+      alert(
+        `Subscription failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
+      );
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [key]: false }));
     }
   };
 
   const handleSubscribeYearly = async (planId: bigint, amount: bigint) => {
+    const key = `${planId}-yearly`;
     try {
-      // Check balance before subscribing
-      if (!balance || balance < amount) {
-        alert('Insufficient PyUSD balance. Please mint PyUSD first.');
+      setLoadingStates((prev) => ({ ...prev, [key]: true }));
+
+      // Network mismatch warning
+      if (chainId && chainId !== validChainId) {
+        alert(
+          `⚠️ Network Mismatch Detected!\n\n` +
+            `Your wallet is connected to chain ID: ${chainId}\n` +
+            `But the app is using chain ID: ${validChainId}\n\n` +
+            `Please switch your wallet to the correct network:\n` +
+            `• Localhost (31337) for local development\n` +
+            `• Arbitrum Sepolia (421614) for testnet\n` +
+            `• Arbitrum One (42161) for mainnet`
+        );
         return;
       }
 
+      // Check balance before subscribing
+      if (!balance || balance < amount) {
+        alert(
+          `Insufficient PyUSD balance. You have ${formatUnits(balance || BigInt(0), 6)} PYUSD but need ${formatUnits(amount, 6)} PYUSD. Please mint more PyUSD first.`
+        );
+        return;
+      }
+
+      console.log('Subscribe Yearly - Plan ID:', planId);
+      console.log('Amount needed:', formatUnits(amount, 6), 'PYUSD');
+      console.log('Your balance:', formatUnits(balance, 6), 'PYUSD');
+
       // First approve PyUSD spending
+      console.log('Approving PyUSD spending...');
       await approvePyUSD(amount);
-      // Then subscribe
+
+      console.log('Approval successful, subscribing...');
+      // Then subscribe (no ETH value should be sent)
       await subscribeYearly(planId);
-    } catch (error) {
+
+      console.log('Subscription successful!');
+    } catch (error: any) {
       console.error('Subscription error:', error);
-      alert('Subscription failed. Please try again.');
+      const errorMessage =
+        error?.message || error?.toString() || 'Unknown error';
+      alert(
+        `Subscription failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
+      );
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [key]: false }));
     }
   };
 
@@ -208,7 +280,12 @@ export default function SubscriptionsPage() {
                   onSubscribeYearly={() =>
                     handleSubscribeYearly(plan.planId, plan.yearlyRate)
                   }
-                  isPending={isPending}
+                  isMonthlyPending={
+                    loadingStates[`${plan.planId}-monthly`] || false
+                  }
+                  isYearlyPending={
+                    loadingStates[`${plan.planId}-yearly`] || false
+                  }
                 />
               ))}
             </div>
