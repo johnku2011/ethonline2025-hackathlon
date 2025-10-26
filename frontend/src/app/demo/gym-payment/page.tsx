@@ -61,12 +61,13 @@ export default function GymPaymentPage() {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
 
   const { address } = useAccount();
   const chainId = useChainId();
   const validChainId = (chainId || 31337) as NetworkId;
 
-  const { approvePyUSD, subscribeMonthly } = useSubscriptionManager(validChainId);
+  const { approvePyUSD, subscribeMonthly, mintPyUSD } = useSubscriptionManager(validChainId);
   const { data: balance } = usePyUSDBalance(validChainId, address);
 
   const selectedPlan = GYM_PLANS.find((p) => p.id === selectedPlanId);
@@ -78,6 +79,26 @@ export default function GymPaymentPage() {
     }
     setSelectedPlanId(planId);
     setIsModalOpen(true);
+  };
+
+  const handleMintPyUSD = async () => {
+    if (!address) {
+      alert('Please connect your wallet first!');
+      return;
+    }
+    try {
+      setIsMinting(true);
+      // Mint 1000 PyUSD for testing
+      const amount = parseUnits('1000', 6); // PyUSD has 6 decimals
+      await mintPyUSD(address, amount);
+      alert('Successfully minted 1000 PyUSD! Please wait a few seconds for the balance to update.');
+    } catch (error: any) {
+      console.error('Mint error:', error);
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      alert(`Failed to mint PyUSD: ${errorMessage}`);
+    } finally {
+      setIsMinting(false);
+    }
   };
 
   const handleConfirmPayment = async () => {
@@ -137,6 +158,33 @@ export default function GymPaymentPage() {
               Choose the membership plan that fits you best and start training today.
               All plans include professional coaching and state-of-the-art equipment.
             </p>
+
+            {/* PyUSD Balance Card - Only show when wallet is connected */}
+            {address && (
+              <div className="mb-8 inline-block">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 shadow-2xl">
+                  <div className="flex items-center justify-center space-x-4">
+                    <div className="text-left">
+                      <p className="text-sm text-orange-100 mb-1">Your Test PyUSD Balance</p>
+                      <p className="text-3xl font-bold">
+                        {balance ? (Number(balance) / 1e6).toFixed(2) : '0.00'} PYUSD
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleMintPyUSD}
+                      disabled={isMinting}
+                      className="bg-white text-orange-600 px-6 py-3 rounded-lg font-semibold hover:bg-orange-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isMinting ? 'Minting...' : '🪙 Get 1000 Test PyUSD'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-orange-100 mt-3 text-center">
+                    💡 Need PyUSD for testing? Click the button to mint 1000 test tokens!
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-center space-x-8 text-sm">
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">🏋️</span>
