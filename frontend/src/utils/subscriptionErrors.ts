@@ -1,8 +1,8 @@
 /**
  * Subscription Error Handler - Strategy Pattern
  * 
- * 這個模組使用 Strategy Pattern 來處理不同類型的訂閱錯誤，
- * 提供清晰、友好的錯誤訊息給用戶。
+ * This module uses Strategy Pattern to handle different types of subscription errors
+ * and provides clear, user-friendly error messages.
  */
 
 export interface ErrorStrategy {
@@ -16,11 +16,11 @@ const alreadySubscribedStrategy: ErrorStrategy = {
     error.includes('Already subscribed') || 
     error.includes('already subscribed'),
   getMessage: () => 
-    '⚠️ 您已經訂閱了一個計劃！\n\n' +
-    '每次只能有一個活躍的訂閱。\n\n' +
-    '💡 如果您想切換計劃：\n' +
-    '1. 先取消當前的訂閱\n' +
-    '2. 然後再訂閱新的計劃'
+    '⚠️ You already have an active subscription!\n\n' +
+    'You can only have one active subscription at a time.\n\n' +
+    '💡 To switch plans:\n' +
+    '1. Cancel your current subscription\n' +
+    '2. Then subscribe to a new plan'
 };
 
 // Strategy 2: User Rejected Transaction
@@ -29,8 +29,8 @@ const userRejectedStrategy: ErrorStrategy = {
     error.includes('User rejected') || 
     error.includes('User denied'),
   getMessage: () => 
-    '❌ 交易已拒絕\n\n' +
-    '您在錢包中拒絕了這筆交易。'
+    '❌ Transaction Rejected\n\n' +
+    'You rejected the transaction in your wallet.'
 };
 
 // Strategy 3: Insufficient Funds
@@ -39,9 +39,9 @@ const insufficientFundsStrategy: ErrorStrategy = {
     error.includes('insufficient funds') ||
     error.includes('Insufficient'),
   getMessage: () => 
-    '❌ 資金不足\n\n' +
-    '您沒有足夠的 ETH 來支付 gas 費用。\n\n' +
-    '💡 請在您的錢包中添加一些 ETH 後再試。'
+    '❌ Insufficient Funds\n\n' +
+    'You don\'t have enough ETH to pay for gas fees.\n\n' +
+    '💡 Please add some ETH to your wallet and try again.'
 };
 
 // Strategy 4: Network Mismatch
@@ -50,19 +50,19 @@ const networkMismatchStrategy: ErrorStrategy = {
     error.includes('network') || 
     error.includes('chain'),
   getMessage: () => 
-    '❌ 網絡不匹配\n\n' +
-    '請確保您的錢包連接到正確的網絡。'
+    '❌ Network Mismatch\n\n' +
+    'Please make sure your wallet is connected to the correct network.'
 };
 
 // Default Strategy: Generic Error
 const defaultStrategy: ErrorStrategy = {
-  match: () => true, // 總是匹配（作為 fallback）
+  match: () => true, // Always match (fallback)
   getMessage: (error: string) => 
-    `❌ 交易失敗\n\n${error}\n\n` +
-    '請檢查：\n' +
-    '1. 您有足夠的 PyUSD 餘額\n' +
-    '2. 您有足夠的 ETH 支付 gas 費用\n' +
-    '3. 您沒有在錢包中拒絕交易'
+    `❌ Transaction Failed\n\n${error}\n\n` +
+    'Please check:\n' +
+    '1. You have enough PyUSD balance\n' +
+    '2. You have enough ETH to pay for gas fees\n' +
+    '3. You didn\'t reject the transaction in your wallet'
 };
 
 // All strategies in order of priority
@@ -71,26 +71,26 @@ const strategies: ErrorStrategy[] = [
   userRejectedStrategy,
   insufficientFundsStrategy,
   networkMismatchStrategy,
-  defaultStrategy, // 必須最後
+  defaultStrategy, // Must be last
 ];
 
 /**
- * 處理訂閱相關錯誤，返回友好的錯誤訊息
+ * Handle subscription-related errors and return user-friendly error messages
  * 
- * @param error - 錯誤對象或字符串
- * @returns 格式化的錯誤訊息
+ * @param error - Error object or string
+ * @returns Formatted error message
  */
 export function handleSubscriptionError(error: any): string {
   const errorMessage = error?.message || error?.toString() || 'Unknown error';
   
-  // 使用第一個匹配的 strategy
+  // Use the first matching strategy
   const strategy = strategies.find(s => s.match(errorMessage));
   
   return strategy ? strategy.getMessage(errorMessage) : defaultStrategy.getMessage(errorMessage);
 }
 
 /**
- * 檢查是否為 "Already subscribed" 錯誤
+ * Check if the error is an "Already subscribed" error
  */
 export function isAlreadySubscribedError(error: any): boolean {
   const errorMessage = error?.message || error?.toString() || '';
