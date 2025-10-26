@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useChainId } from 'wagmi';
+import { useAccount, useChainId, usePublicClient } from 'wagmi';
 import { parseUnits } from 'viem';
 import { GymHeader } from '@/components/demo/GymHeader';
 import { GymPlanCard } from '@/components/demo/GymPlanCard';
@@ -65,6 +65,7 @@ export default function GymPaymentPage() {
   const { address } = useAccount();
   const chainId = useChainId();
   const validChainId = (chainId || 31337) as NetworkId;
+  const publicClient = usePublicClient();
 
   const { approvePyUSD, subscribeMonthly } = useSubscriptionManager(validChainId);
   const { data: balance } = usePyUSDBalance(validChainId, address);
@@ -81,7 +82,7 @@ export default function GymPaymentPage() {
   };
 
   const handleConfirmPayment = async () => {
-    if (!selectedPlan) return;
+    if (!selectedPlan || !publicClient) return;
 
     try {
       setIsProcessing(true);
@@ -95,14 +96,25 @@ export default function GymPaymentPage() {
         return;
       }
 
-      // Approve PyUSD
-      console.log('Approving PyUSD...');
-      await approvePyUSD(amount);
+      // Step 1: Approve PyUSD
+      console.log('Step 1: Approving PyUSD...');
+      const approveHash = await approvePyUSD(amount);
+      console.log('Approve transaction sent:', approveHash);
 
-      // Subscribe (using plan ID 1 for demo)
-      // Note: Plan IDs start from 1 in the contract
-      console.log('Subscribing to plan...');
-      await subscribeMonthly(1n, false);
+      // Step 2: Wait for approve transaction confirmation
+      console.log('Step 2: Waiting for approve confirmation...');
+      await publicClient.waitForTransactionReceipt({ hash: approveHash });
+      console.log('Approve transaction confirmed!');
+
+      // Step 3: Subscribe to plan
+      console.log('Step 3: Subscribing to plan...');
+      const subscribeHash = await subscribeMonthly(0n, false);
+      console.log('Subscribe transaction sent:', subscribeHash);
+
+      // Step 4: Wait for subscribe transaction confirmation
+      console.log('Step 4: Waiting for subscribe confirmation...');
+      await publicClient.waitForTransactionReceipt({ hash: subscribeHash });
+      console.log('Subscribe transaction confirmed!');
 
       alert('Subscription successful! Welcome to FitLife Gym!');
       setIsModalOpen(false);
