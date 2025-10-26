@@ -108,36 +108,60 @@ export default function GymPaymentPage() {
       setIsProcessing(true);
       const amount = parseUnits(selectedPlan.price, 6);
 
-      // Check balance
+      // Check PyUSD balance
       if (!balance || balance < amount) {
+        const currentBalance = balance ? (Number(balance) / 1e6).toFixed(2) : '0';
         alert(
-          `Insufficient balance! You need ${selectedPlan.price} PYUSD, but only have ${balance ? (Number(balance) / 1e6).toFixed(2) : '0'} PYUSD.`
+          `❌ Insufficient PyUSD Balance!\n\n` +
+          `You need: ${selectedPlan.price} PYUSD\n` +
+          `You have: ${currentBalance} PYUSD\n\n` +
+          `💡 Click the "Get 1000 Test PyUSD" button above to mint test tokens!`
         );
+        setIsProcessing(false);
         return;
       }
 
       console.log('Subscribe Monthly - Plan ID: 1');
       console.log('Amount needed:', selectedPlan.price, 'PYUSD');
+      console.log('Current balance:', (Number(balance) / 1e6).toFixed(2), 'PYUSD');
 
       // First approve PyUSD spending
-      console.log('Approving PyUSD spending...');
+      console.log('Step 1: Approving PyUSD spending...');
       await approvePyUSD(amount);
+      console.log('✅ Approval successful!');
 
-      console.log('Approval successful, subscribing...');
       // Then subscribe (plan IDs start from 1 in contract)
+      console.log('Step 2: Subscribing to plan...');
       await subscribeMonthly(1n, false);
+      console.log('✅ Subscription successful!');
 
-      console.log('Subscription successful!');
-      alert('Subscription successful! Welcome to FitLife Gym!');
+      alert('🎉 Subscription successful! Welcome to FitLife Gym!');
       setIsModalOpen(false);
       setSelectedPlanId(null);
     } catch (error: any) {
       console.error('Payment error:', error);
-      const errorMessage =
-        error?.message || error?.toString() || 'Unknown error';
-      alert(
-        `Payment failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
-      );
+      
+      // Parse error message
+      let errorMessage = error?.message || error?.toString() || 'Unknown error';
+      
+      // Provide helpful error messages
+      if (errorMessage.includes('User rejected') || errorMessage.includes('User denied')) {
+        alert('❌ Transaction Rejected\n\nYou rejected the transaction in your wallet.');
+      } else if (errorMessage.includes('insufficient funds')) {
+        alert(
+          '❌ Insufficient Funds\n\n' +
+          'You don\'t have enough ETH to pay for gas fees.\n\n' +
+          '💡 Please add some ETH to your wallet and try again.'
+        );
+      } else {
+        alert(
+          `❌ Payment Failed\n\n${errorMessage}\n\n` +
+          `Please check:\n` +
+          `1. You have enough PyUSD balance (${selectedPlan.price} PYUSD needed)\n` +
+          `2. You have enough ETH for gas fees\n` +
+          `3. You didn't reject the transaction in your wallet`
+        );
+      }
     } finally {
       setIsProcessing(false);
     }
