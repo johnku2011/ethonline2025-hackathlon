@@ -74,25 +74,25 @@ export function PaymentModal({
         <div className="text-center mb-6">
           <div className="text-5xl mb-4">💳</div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">
-            確認訂閱
+            Confirm Subscription
           </h3>
-          <p className="text-gray-600">使用 PyUSD 安全付款</p>
+          <p className="text-gray-600">Secure payment with PyUSD</p>
         </div>
 
         {/* Plan Details */}
         <div className="bg-gray-50 rounded-xl p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-gray-600">會員計劃</span>
+            <span className="text-gray-600">Membership Plan</span>
             <span className="font-semibold text-gray-900">{planName}</span>
           </div>
           <div className="flex justify-between items-center mb-4">
-            <span className="text-gray-600">金額</span>
+            <span className="text-gray-600">Amount</span>
             <span className="text-2xl font-bold text-orange-600">
               ${planPrice} PYUSD
             </span>
           </div>
           <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-            <span className="text-gray-600">您的餘額</span>
+            <span className="text-gray-600">Your Balance</span>
             <span className="font-semibold text-gray-900">
               {balanceFormatted} PYUSD
             </span>
@@ -105,11 +105,11 @@ export function PaymentModal({
             <span className="text-blue-500 text-xl">🔒</span>
             <div className="flex-1">
               <p className="text-sm text-blue-900 font-medium mb-1">
-                安全支付
+                Secure Payment
               </p>
               <p className="text-xs text-blue-700">
-                此交易使用 SubPay Protocol 處理，
-                您的付款資訊將透過區塊鏈安全加密。
+                This transaction is processed by SubPay Protocol.
+                Your payment information is securely encrypted on the blockchain.
               </p>
             </div>
           </div>
@@ -122,14 +122,14 @@ export function PaymentModal({
             disabled={isProcessing}
             className="flex-1 py-3 px-6 rounded-lg font-semibold bg-gray-100 hover:bg-gray-200 text-gray-900 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            取消
+            Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={isProcessing}
             className="flex-1 py-3 px-6 rounded-lg font-semibold bg-orange-500 hover:bg-orange-600 text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isProcessing ? '處理中...' : '確認付款'}
+            {isProcessing ? 'Processing...' : 'Confirm Payment'}
           </button>
         </div>
 
