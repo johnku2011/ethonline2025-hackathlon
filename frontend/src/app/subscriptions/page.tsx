@@ -15,6 +15,10 @@ export default function SubscriptionsPage() {
   const { address, chainId } = useAccount();
   // Note: enableAutoPay is now default true in Lab version, removed UI control
   const [stakeYearly, setStakeYearly] = useState(false);
+  // Track loading state for each button independently
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>(
+    {}
+  );
 
   const validChainId = (
     chainId === 31337 || chainId === 421614 || chainId === 42161
@@ -34,7 +38,10 @@ export default function SubscriptionsPage() {
   const { data: balance } = usePyUSDBalance(validChainId, address);
 
   const handleSubscribeMonthly = async (planId: bigint, amount: bigint) => {
+    const key = `${planId}-monthly`;
     try {
+      setLoadingStates((prev) => ({ ...prev, [key]: true }));
+
       // Check balance before subscribing
       if (!balance || balance < amount) {
         alert('Insufficient PyUSD balance. Please mint PyUSD first.');
@@ -48,16 +55,23 @@ export default function SubscriptionsPage() {
     } catch (error) {
       console.error('Subscription error:', error);
       alert('Subscription failed. Please try again.');
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [key]: false }));
     }
   };
 
   const handleSubscribeYearly = async (planId: bigint, amount: bigint) => {
+    const key = `${planId}-yearly`;
     try {
+      setLoadingStates((prev) => ({ ...prev, [key]: true }));
+
       // Check balance before subscribing
       if (!balance || balance < amount) {
         alert('Insufficient PyUSD balance. Please mint PyUSD first.');
         return;
       }
+
+      console.log('Subscribe Yearly - Plan ID:', planId, 'Amount:', amount);
 
       // First approve PyUSD spending
       await approvePyUSD(amount);
@@ -66,6 +80,8 @@ export default function SubscriptionsPage() {
     } catch (error) {
       console.error('Subscription error:', error);
       alert('Subscription failed. Please try again.');
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [key]: false }));
     }
   };
 
@@ -208,7 +224,12 @@ export default function SubscriptionsPage() {
                   onSubscribeYearly={() =>
                     handleSubscribeYearly(plan.planId, plan.yearlyRate)
                   }
-                  isPending={isPending}
+                  isMonthlyPending={
+                    loadingStates[`${plan.planId}-monthly`] || false
+                  }
+                  isYearlyPending={
+                    loadingStates[`${plan.planId}-yearly`] || false
+                  }
                 />
               ))}
             </div>
