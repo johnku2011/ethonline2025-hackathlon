@@ -11,8 +11,10 @@ import {
   useSubscriptionManager,
   usePyUSDBalance,
   useAllPlans,
+  useUserActiveSubscriptions,
 } from '@/hooks/useSubscriptionManager';
 import type { NetworkId } from '@/lib/contracts';
+import { handleSubscriptionError, isAlreadySubscribedError } from '@/utils/subscriptionErrors';
 
 export default function GymPaymentPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,15 +32,29 @@ export default function GymPaymentPage() {
       : 31337
   ) as NetworkId;
 
-  const { approvePyUSD, subscribeMonthly, mintPyUSD } =
+  const { approvePyUSD, subscribeMonthly, mintPyUSD, cancelSubscription } =
     useSubscriptionManager(validChainId);
   const { data: balance } = usePyUSDBalance(validChainId, address);
   const { plans, isLoading: isLoadingPlans } = useAllPlans(validChainId);
+  
+  // Check user's active subscriptions
+  const { data: activeSubscriptions, refetch: refetchSubscriptions } = 
+    useUserActiveSubscriptions(validChainId, address);
 
   // Find the Gym Membership plan specifically (Plan ID 5 in demo data)
   // Fallback to first plan if Gym Membership not found
   const recommendedPlan =
     plans.find((plan) => plan.name === 'Gym Membership') || plans[0] || null;
+  
+  // Check if user has any active subscription
+  const hasActiveSubscription = activeSubscriptions && 
+    Array.isArray(activeSubscriptions) && 
+    activeSubscriptions.length > 0;
+  
+  // Check if user is subscribed to the recommended plan
+  const isSubscribedToThisPlan = hasActiveSubscription && 
+    recommendedPlan &&
+    activeSubscriptions?.includes(recommendedPlan.planId);
 
   const handleSelectPlan = () => {
     if (!address) {
@@ -72,6 +88,38 @@ export default function GymPaymentPage() {
       alert(`Failed to mint PyUSD: ${errorMessage}`);
     } finally {
       setIsMinting(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!recommendedPlan || !activeSubscriptions || activeSubscriptions.length === 0) {
+      return;
+    }
+
+    // Get the first active subscription plan ID
+    const activePlanId = activeSubscriptions[0];
+
+    const confirmed = confirm(
+      '⚠️ 確認取消訂閱？\n\n' +
+      '取消後，您將失去會員權益。\n' +
+      '如果有未使用的年費質押，將會自動返還。\n\n' +
+      '確定要繼續嗎？'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsProcessing(true);
+      await cancelSubscription(activePlanId);
+      alert('✅ 訂閱已成功取消！');
+      // Refresh subscription data
+      refetchSubscriptions();
+    } catch (error: any) {
+      console.error('Cancel subscription error:', error);
+      const errorMessage = handleSubscriptionError(error);
+      alert(errorMessage);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -131,35 +179,19 @@ export default function GymPaymentPage() {
 
       alert('🎉 Subscription successful! Welcome to FitLife Gym!');
       setIsModalOpen(false);
+      
+      // Refresh subscription data to show updated status
+      refetchSubscriptions();
     } catch (error: any) {
       console.error('Payment error:', error);
 
-      // Parse error message
-      let errorMessage = error?.message || error?.toString() || 'Unknown error';
-
-      // Provide helpful error messages
-      if (
-        errorMessage.includes('User rejected') ||
-        errorMessage.includes('User denied')
-      ) {
-        alert(
-          '❌ Transaction Rejected\n\nYou rejected the transaction in your wallet.'
-        );
-      } else if (errorMessage.includes('insufficient funds')) {
-        alert(
-          '❌ Insufficient Funds\n\n' +
-            "You don't have enough ETH to pay for gas fees.\n\n" +
-            '💡 Please add some ETH to your wallet and try again.'
-        );
-      } else {
-        const priceNeeded = formatUnits(recommendedPlan.monthlyRate, 6);
-        alert(
-          `❌ Payment Failed\n\n${errorMessage}\n\n` +
-            `Please check:\n` +
-            `1. You have enough PyUSD balance (${priceNeeded} PYUSD needed)\n` +
-            `2. You have enough ETH for gas fees\n` +
-            `3. You didn't reject the transaction in your wallet`
-        );
+      // Use Strategy Pattern for error handling
+      const errorMessage = handleSubscriptionError(error);
+      alert(errorMessage);
+      
+      // If it's an "Already subscribed" error, refresh subscription data
+      if (isAlreadySubscribedError(error)) {
+        refetchSubscriptions();
       }
     } finally {
       setIsProcessing(false);
@@ -264,6 +296,14 @@ export default function GymPaymentPage() {
           {/* Recommended Plan Card */}
           {!isLoadingPlans && recommendedPlan && (
             <div className="max-w-md mx-auto">
+              {hasActiveSubscription && !isSubscribedToThisPlan && (
+                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-800 text-sm text-center">
+                    ⚠️ 您已經有一個活躍的訂閱。如需切換計劃，請先取消當前訂閱。
+                  </p>
+                </div>
+              )}
+              
               <GymPlanCard
                 name={recommendedPlan.name}
                 price={formatUnits(recommendedPlan.monthlyRate, 6)}
@@ -279,7 +319,9 @@ export default function GymPaymentPage() {
                 ]}
                 isPopular={true}
                 onSelect={handleSelectPlan}
-                isLoading={false}
+                isLoading={isProcessing}
+                isSubscribed={isSubscribedToThisPlan}
+                onCancel={handleCancelSubscription}
               />
             </div>
           )}
