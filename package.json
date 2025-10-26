@@ -5,7 +5,7 @@
   "description": "A decentralized subscription platform with PyUSD rewards",
   "scripts": {
     "dev": "pnpm --filter frontend dev",
-    "build": "pnpm --filter frontend build",
+    "build": "cd frontend && pnpm install && pnpm build",
     "lint": "pnpm --filter frontend lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "prepare": "husky install"

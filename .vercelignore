@@ -1,0 +1,12 @@
+contracts/
+backend/
+node_modules/
+.git/
+.github/
+*.md
+docs/
+.env
+.env.*
+!.env.example
+!.env.local.example
+
