@@ -116,7 +116,7 @@ export function PaymentModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 mb-4">
           <button
             onClick={onClose}
             disabled={isProcessing}
@@ -131,6 +131,16 @@ export function PaymentModal({
           >
             {isProcessing ? '處理中...' : '確認付款'}
           </button>
+        </div>
+
+        {/* Powered By */}
+        <div className="text-center">
+          <p className="text-xs text-gray-500">
+            Powered by{' '}
+            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              SubPay Protocol
+            </span>
+          </p>
         </div>
       </div>
     </div>

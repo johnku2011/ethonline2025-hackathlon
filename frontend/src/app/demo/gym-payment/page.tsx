@@ -6,6 +6,7 @@ import { parseUnits } from 'viem';
 import { GymHeader } from '@/components/demo/GymHeader';
 import { GymPlanCard } from '@/components/demo/GymPlanCard';
 import { PaymentModal } from '@/components/demo/PaymentModal';
+import { PoweredByBadge } from '@/components/demo/PoweredByBadge';
 import { useSubscriptionManager } from '@/hooks/useSubscriptionManager';
 import { usePyUSDBalance } from '@/lib/contracts/pyusd';
 import type { NetworkId } from '@/lib/contracts';
@@ -191,6 +192,9 @@ export default function GymPaymentPage() {
           balance={balance}
         />
       )}
+
+      {/* Powered By Badge */}
+      <PoweredByBadge />
     </div>
   );
 }
