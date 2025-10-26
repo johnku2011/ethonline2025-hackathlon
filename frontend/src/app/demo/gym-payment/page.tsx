@@ -2,63 +2,15 @@
 
 import { useState } from 'react';
 import { useAccount, useChainId } from 'wagmi';
-import { parseUnits } from 'viem';
+import { formatUnits } from 'viem';
 import { GymHeader } from '@/components/demo/GymHeader';
 import { GymPlanCard } from '@/components/demo/GymPlanCard';
 import { PaymentModal } from '@/components/demo/PaymentModal';
 import { PoweredByBadge } from '@/components/demo/PoweredByBadge';
-import { useSubscriptionManager, usePyUSDBalance } from '@/hooks/useSubscriptionManager';
+import { useSubscriptionManager, usePyUSDBalance, useAllPlans } from '@/hooks/useSubscriptionManager';
 import type { NetworkId } from '@/lib/contracts';
 
-// Define membership plans
-const GYM_PLANS = [
-  {
-    id: 'basic',
-    name: 'Basic',
-    price: '29',
-    period: 'month',
-    features: [
-      'Unlimited gym access',
-      'Basic equipment training',
-      'Shower facilities',
-      'Mon-Fri 6AM-10PM',
-      'Free WiFi',
-    ],
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    price: '49',
-    period: 'month',
-    features: [
-      'All Basic features',
-      'Group classes (Yoga, Spin, Cardio)',
-      '2 personal training sessions/month',
-      '24/7 access',
-      'Free parking',
-      'Protein shake discounts',
-    ],
-    isPopular: true,
-  },
-  {
-    id: 'vip',
-    name: 'VIP',
-    price: '99',
-    period: 'month',
-    features: [
-      'All Premium features',
-      'Unlimited personal training',
-      'Exclusive VIP training area',
-      'Nutritionist consultation',
-      'Massage services',
-      'Free workout gear rental',
-      'Reserved parking spot',
-    ],
-  },
-];
-
 export default function GymPaymentPage() {
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
@@ -69,15 +21,20 @@ export default function GymPaymentPage() {
 
   const { approvePyUSD, subscribeMonthly, mintPyUSD } = useSubscriptionManager(validChainId);
   const { data: balance } = usePyUSDBalance(validChainId, address);
+  const { plans, isLoading: isLoadingPlans } = useAllPlans(validChainId);
 
-  const selectedPlan = GYM_PLANS.find((p) => p.id === selectedPlanId);
+  // Use the first active plan as the recommended plan
+  const recommendedPlan = plans.length > 0 ? plans[0] : null;
 
-  const handleSelectPlan = (planId: string) => {
+  const handleSelectPlan = () => {
     if (!address) {
       alert('Please connect your wallet first!');
       return;
     }
-    setSelectedPlanId(planId);
+    if (!recommendedPlan) {
+      alert('No subscription plan available. Please try again later.');
+      return;
+    }
     setIsModalOpen(true);
   };
 
@@ -89,7 +46,7 @@ export default function GymPaymentPage() {
     try {
       setIsMinting(true);
       // Mint 1000 PyUSD for testing
-      const amount = parseUnits('1000', 6); // PyUSD has 6 decimals
+      const amount = BigInt(1000 * 1e6); // PyUSD has 6 decimals
       await mintPyUSD(address, amount);
       alert('Successfully minted 1000 PyUSD! Please wait a few seconds for the balance to update.');
     } catch (error: any) {
@@ -102,18 +59,19 @@ export default function GymPaymentPage() {
   };
 
   const handleConfirmPayment = async () => {
-    if (!selectedPlan) return;
+    if (!recommendedPlan) return;
 
     try {
       setIsProcessing(true);
-      const amount = parseUnits(selectedPlan.price, 6);
+      const amount = recommendedPlan.monthlyRate;
+      const priceInPyUSD = formatUnits(amount, 6);
 
       // Check PyUSD balance
       if (!balance || balance < amount) {
-        const currentBalance = balance ? (Number(balance) / 1e6).toFixed(2) : '0';
+        const currentBalance = balance ? formatUnits(balance, 6) : '0';
         alert(
           `❌ Insufficient PyUSD Balance!\n\n` +
-          `You need: ${selectedPlan.price} PYUSD\n` +
+          `You need: ${priceInPyUSD} PYUSD\n` +
           `You have: ${currentBalance} PYUSD\n\n` +
           `💡 Click the "Get 1000 Test PyUSD" button above to mint test tokens!`
         );
@@ -121,23 +79,23 @@ export default function GymPaymentPage() {
         return;
       }
 
-      console.log('Subscribe Monthly - Plan ID: 1');
-      console.log('Amount needed:', selectedPlan.price, 'PYUSD');
-      console.log('Current balance:', (Number(balance) / 1e6).toFixed(2), 'PYUSD');
+      console.log('Subscribe Monthly - Plan ID:', recommendedPlan.planId.toString());
+      console.log('Plan Name:', recommendedPlan.name);
+      console.log('Amount needed:', priceInPyUSD, 'PYUSD');
+      console.log('Current balance:', formatUnits(balance, 6), 'PYUSD');
 
       // First approve PyUSD spending
       console.log('Step 1: Approving PyUSD spending...');
       await approvePyUSD(amount);
       console.log('✅ Approval successful!');
 
-      // Then subscribe (plan IDs start from 1 in contract)
+      // Then subscribe using the real planId from contract
       console.log('Step 2: Subscribing to plan...');
-      await subscribeMonthly(1n, false);
+      await subscribeMonthly(recommendedPlan.planId, false);
       console.log('✅ Subscription successful!');
 
       alert('🎉 Subscription successful! Welcome to FitLife Gym!');
       setIsModalOpen(false);
-      setSelectedPlanId(null);
     } catch (error: any) {
       console.error('Payment error:', error);
       
@@ -157,7 +115,7 @@ export default function GymPaymentPage() {
         alert(
           `❌ Payment Failed\n\n${errorMessage}\n\n` +
           `Please check:\n` +
-          `1. You have enough PyUSD balance (${selectedPlan.price} PYUSD needed)\n` +
+          `1. You have enough PyUSD balance (${priceInPyUSD} PYUSD needed)\n` +
           `2. You have enough ETH for gas fees\n` +
           `3. You didn't reject the transaction in your wallet`
         );
@@ -227,45 +185,69 @@ export default function GymPaymentPage() {
         </div>
       </section>
 
-      {/* Plans Section - Will be added in next commit */}
+      {/* Recommended Plan Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">
-              Choose Your Membership Plan
+              Our Recommended Membership Plan
             </h3>
             <p className="text-gray-600">
-              All plans support secure payment with PyUSD
+              Secure payment with PyUSD • Start your fitness journey today
             </p>
           </div>
-          {/* Plan Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {GYM_PLANS.map((plan) => (
+
+          {/* Loading State */}
+          {isLoadingPlans && (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+              <p className="mt-4 text-gray-600">Loading plan...</p>
+            </div>
+          )}
+
+          {/* No Plan Available */}
+          {!isLoadingPlans && !recommendedPlan && (
+            <div className="text-center py-12 bg-gray-100 rounded-xl">
+              <p className="text-gray-600 text-lg">
+                No subscription plan available at the moment. Please try again later.
+              </p>
+            </div>
+          )}
+
+          {/* Recommended Plan Card */}
+          {!isLoadingPlans && recommendedPlan && (
+            <div className="max-w-md mx-auto">
               <GymPlanCard
-                key={plan.id}
-                name={plan.name}
-                price={plan.price}
-                period={plan.period}
-                features={plan.features}
-                isPopular={plan.isPopular}
-                onSelect={() => handleSelectPlan(plan.id)}
+                name={recommendedPlan.name}
+                price={formatUnits(recommendedPlan.monthlyRate, 6)}
+                period="month"
+                features={[
+                  'Unlimited gym access',
+                  'Professional equipment training',
+                  'Group fitness classes',
+                  'Personal training sessions',
+                  'Shower & locker facilities',
+                  '24/7 access',
+                  'Free WiFi & parking',
+                ]}
+                isPopular={true}
+                onSelect={handleSelectPlan}
                 isLoading={false}
               />
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
       {/* Payment Modal */}
-      {selectedPlan && (
+      {recommendedPlan && (
         <PaymentModal
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
-            setSelectedPlanId(null);
           }}
-          planName={selectedPlan.name}
-          planPrice={selectedPlan.price}
+          planName={recommendedPlan.name}
+          planPrice={formatUnits(recommendedPlan.monthlyRate, 6)}
           onConfirm={handleConfirmPayment}
           isProcessing={isProcessing}
           balance={balance}
