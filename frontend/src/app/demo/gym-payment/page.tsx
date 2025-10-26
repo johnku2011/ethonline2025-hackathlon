@@ -100,10 +100,10 @@ export default function GymPaymentPage() {
     const activePlanId = activeSubscriptions[0];
 
     const confirmed = confirm(
-      '⚠️ 確認取消訂閱？\n\n' +
-      '取消後，您將失去會員權益。\n' +
-      '如果有未使用的年費質押，將會自動返還。\n\n' +
-      '確定要繼續嗎？'
+      '⚠️ Confirm Cancellation?\n\n' +
+      'After cancellation, you will lose your membership benefits.\n' +
+      'If you have any unused annual fee deposits, they will be automatically refunded.\n\n' +
+      'Are you sure you want to continue?'
     );
 
     if (!confirmed) return;
@@ -111,7 +111,7 @@ export default function GymPaymentPage() {
     try {
       setIsProcessing(true);
       await cancelSubscription(activePlanId);
-      alert('✅ 訂閱已成功取消！');
+      alert('✅ Subscription cancelled successfully!');
       // Refresh subscription data
       refetchSubscriptions();
     } catch (error: any) {
@@ -299,7 +299,7 @@ export default function GymPaymentPage() {
               {hasActiveSubscription && !isSubscribedToThisPlan && (
                 <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-yellow-800 text-sm text-center">
-                    ⚠️ 您已經有一個活躍的訂閱。如需切換計劃，請先取消當前訂閱。
+                    ⚠️ You already have an active subscription. To switch plans, please cancel your current subscription first.
                   </p>
                 </div>
               )}

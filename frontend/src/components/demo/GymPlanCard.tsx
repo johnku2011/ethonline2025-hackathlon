@@ -37,7 +37,7 @@ export function GymPlanCard({
       
       {isSubscribed && (
         <div className="absolute top-0 right-0 bg-green-500 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
-          ✓ 已訂閱
+          ✓ Subscribed
         </div>
       )}
 
