@@ -23,8 +23,9 @@ export default function GymPaymentPage() {
   const { data: balance } = usePyUSDBalance(validChainId, address);
   const { plans, isLoading: isLoadingPlans } = useAllPlans(validChainId);
 
-  // Use the first active plan as the recommended plan
-  const recommendedPlan = plans.length > 0 ? plans[0] : null;
+  // Find the Gym Membership plan specifically (Plan ID 5 in demo data)
+  // Fallback to first plan if Gym Membership not found
+  const recommendedPlan = plans.find(plan => plan.name === 'Gym Membership') || plans[0] || null;
 
   const handleSelectPlan = () => {
     if (!address) {
