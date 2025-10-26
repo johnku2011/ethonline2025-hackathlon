@@ -33,14 +33,14 @@ function SubscriptionItem({
     status,
     monthlyRate,
     yearlyRate,
-    startTime,
+    // startTime kept for future use
     expirationTime,
     stakedAmount,
     morphoShares,
   } = subscription;
 
   // subscriptionPlans returns multiple outputs (array) - use array destructuring
-  const [planMonthlyRate, planYearlyRate, isActive, name] = plan;
+  const [, , , name] = plan;
 
   const isMonthly = subType === 0;
   const isActiveStatus = status === 1;
@@ -139,7 +139,7 @@ export function UserSubscriptions() {
   if (!activeSubscriptions || activeSubscriptions.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        You don't have any active subscriptions yet
+        You don&apos;t have any active subscriptions yet
       </div>
     );
   }

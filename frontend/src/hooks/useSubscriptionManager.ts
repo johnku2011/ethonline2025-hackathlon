@@ -4,7 +4,6 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from 'wagmi';
-import { parseUnits } from 'viem';
 import { useMemo } from 'react';
 import {
   SUBSCRIPTION_MANAGER_ABI,
@@ -195,7 +194,12 @@ export function useAllPlans(chainId: NetworkId) {
       .map((result, index) => {
         if (result.status !== 'success' || !result.result) return null;
 
-        const [monthlyRate, yearlyRate, isActive, name] = result.result;
+        const planResult = result as {
+          status: 'success';
+          result: readonly [bigint, bigint, boolean, string];
+        };
+
+        const [monthlyRate, yearlyRate, isActive, name] = planResult.result;
 
         return {
           planId: BigInt(index + 1),

@@ -27,7 +27,7 @@ export function HeroSection() {
 
           {/* Subheadline */}
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Pay2Earn lets you pay yearly subscriptions in PayPal’s PyUSD, earn at
+            Pay2Earn lets you pay yearly subscriptions in PayPal&apos;s PyUSD, earn at
             least 4% APY from PyUSD rewards, and capture extra yield as we deploy
             funds into Morpho vaults. Finish the year, withdraw your principal
             plus interest; cancel early and the yield automatically rewards the
@@ -64,7 +64,7 @@ export function HeroSection() {
             </Link>
             <Link href="/provider">
               <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                I'm a Provider
+                I&apos;m a Provider
               </Button>
             </Link>
           </div>

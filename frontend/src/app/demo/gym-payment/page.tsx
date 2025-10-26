@@ -92,9 +92,9 @@ export default function GymPaymentPage() {
       const amount = parseUnits('1000', 6); // PyUSD has 6 decimals
       await mintPyUSD(address, amount);
       alert('Successfully minted 1000 PyUSD! Please wait a few seconds for the balance to update.');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Mint error:', error);
-      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : String(error);
       alert(`Failed to mint PyUSD: ${errorMessage}`);
     } finally {
       setIsMinting(false);
@@ -138,11 +138,11 @@ export default function GymPaymentPage() {
       alert('🎉 Subscription successful! Welcome to FitLife Gym!');
       setIsModalOpen(false);
       setSelectedPlanId(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Payment error:', error);
       
       // Parse error message
-      let errorMessage = error?.message || error?.toString() || 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : String(error);
       
       // Provide helpful error messages
       if (errorMessage.includes('User rejected') || errorMessage.includes('User denied')) {
