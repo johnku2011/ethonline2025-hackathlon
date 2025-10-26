@@ -106,9 +106,9 @@ export default function GymPaymentPage() {
       await publicClient.waitForTransactionReceipt({ hash: approveHash });
       console.log('Approve transaction confirmed!');
 
-      // Step 3: Subscribe to plan
+      // Step 3: Subscribe to plan (plan IDs start from 1 in contract)
       console.log('Step 3: Subscribing to plan...');
-      const subscribeHash = await subscribeMonthly(0n, false);
+      const subscribeHash = await subscribeMonthly(1n, false);
       console.log('Subscribe transaction sent:', subscribeHash);
 
       // Step 4: Wait for subscribe transaction confirmation
