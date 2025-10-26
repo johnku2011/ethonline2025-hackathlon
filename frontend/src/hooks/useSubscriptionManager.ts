@@ -3,7 +3,9 @@ import {
   useReadContracts,
   useWriteContract,
   useWaitForTransactionReceipt,
+  useConfig,
 } from 'wagmi';
+import { simulateContract } from '@wagmi/core';
 import { useMemo } from 'react';
 import {
   SUBSCRIPTION_MANAGER_ABI,
@@ -18,6 +20,7 @@ export function useSubscriptionManager(chainId: NetworkId) {
     'subscriptionManager'
   );
   const pyusdAddress = getContractAddress(chainId, 'pyusd');
+  const config = useConfig();
 
   // Write operations
   const { writeContract, data: hash, isPending } = useWriteContract();
@@ -25,58 +28,83 @@ export function useSubscriptionManager(chainId: NetworkId) {
     hash,
   });
 
-  // Approve PyUSD spending
+  // Approve PyUSD spending with simulation
   const approvePyUSD = async (amount: bigint) => {
-    return writeContract({
+    // First simulate to validate and get proper gas estimation
+    const { request } = await simulateContract(config, {
       address: pyusdAddress,
       abi: PYUSD_ABI,
       functionName: 'approve',
       args: [subscriptionManagerAddress, amount],
+      chainId,
     });
+
+    // Then execute with the simulated request
+    return writeContract(request);
   };
 
-  // Subscribe to monthly plan
+  // Subscribe to monthly plan with simulation
   // Note: Auto-pay is now enabled by default in the Lab version contract
   const subscribeMonthly = async (
     planId: bigint,
     stakeYearlyAmount: boolean
   ) => {
-    return writeContract({
+    // First simulate to validate and get proper gas estimation
+    const { request } = await simulateContract(config, {
       address: subscriptionManagerAddress,
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'subscribeMonthly',
       args: [planId, stakeYearlyAmount],
+      chainId,
     });
+
+    // Then execute with the simulated request
+    return writeContract(request);
   };
 
-  // Subscribe to yearly plan
+  // Subscribe to yearly plan with simulation
   const subscribeYearly = async (planId: bigint) => {
-    return writeContract({
+    // First simulate to validate and get proper gas estimation
+    const { request } = await simulateContract(config, {
       address: subscriptionManagerAddress,
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'subscribeYearly',
       args: [planId],
+      chainId,
     });
+
+    // Then execute with the simulated request
+    return writeContract(request);
   };
 
-  // Cancel subscription
+  // Cancel subscription with simulation
   const cancelSubscription = async (planId: bigint) => {
-    return writeContract({
+    // First simulate to validate and get proper gas estimation
+    const { request } = await simulateContract(config, {
       address: subscriptionManagerAddress,
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'cancelSubscription',
       args: [planId],
+      chainId,
     });
+
+    // Then execute with the simulated request
+    return writeContract(request);
   };
 
-  // Mint PyUSD for testing
+  // Mint PyUSD for testing with simulation
   const mintPyUSD = async (to: `0x${string}`, amount: bigint) => {
-    return writeContract({
+    // First simulate to validate and get proper gas estimation
+    const { request } = await simulateContract(config, {
       address: pyusdAddress,
       abi: PYUSD_ABI,
       functionName: 'mint',
       args: [to, amount],
+      chainId,
     });
+
+    // Then execute with the simulated request
+    return writeContract(request);
   };
 
   // Note: withdrawYield removed in Lab version - yield is automatically returned on cancellation
@@ -194,12 +222,13 @@ export function useAllPlans(chainId: NetworkId) {
       .map((result, index) => {
         if (result.status !== 'success' || !result.result) return null;
 
-        const planResult = result as {
-          status: 'success';
-          result: readonly [bigint, bigint, boolean, string];
-        };
-
-        const [monthlyRate, yearlyRate, isActive, name] = planResult.result;
+        // @ts-expect-error - Type assertion for the tuple result from contract
+        const [monthlyRate, yearlyRate, isActive, name] = result.result as readonly [
+          bigint,
+          bigint,
+          boolean,
+          string
+        ];
 
         return {
           planId: BigInt(index + 1),

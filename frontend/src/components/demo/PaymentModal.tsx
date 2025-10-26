@@ -35,9 +35,7 @@ export function PaymentModal({
 
   if (!isOpen) return null;
 
-  const balanceFormatted = balance
-    ? formatUnits(balance, 6)
-    : '0';
+  const balanceFormatted = balance ? formatUnits(balance, 6) : '0';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -108,8 +106,8 @@ export function PaymentModal({
                 Secure Payment
               </p>
               <p className="text-xs text-blue-700">
-                This transaction is processed by SubPay Protocol.
-                Your payment information is securely encrypted on the blockchain.
+                This transaction is processed by SubPay Protocol. Your payment
+                information is securely encrypted on the blockchain.
               </p>
             </div>
           </div>
@@ -146,4 +144,3 @@ export function PaymentModal({
     </div>
   );
 }
-

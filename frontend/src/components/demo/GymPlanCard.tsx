@@ -8,6 +8,8 @@ interface GymPlanCardProps {
   isPopular?: boolean;
   onSelect: () => void;
   isLoading?: boolean;
+  isSubscribed?: boolean;
+  onCancel?: () => void;
 }
 
 export function GymPlanCard({
@@ -18,6 +20,8 @@ export function GymPlanCard({
   isPopular = false,
   onSelect,
   isLoading = false,
+  isSubscribed = false,
+  onCancel,
 }: GymPlanCardProps) {
   return (
     <div
@@ -25,9 +29,15 @@ export function GymPlanCard({
         isPopular ? 'ring-4 ring-orange-500' : ''
       }`}
     >
-      {isPopular && (
+      {isPopular && !isSubscribed && (
         <div className="absolute top-0 right-0 bg-orange-500 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
           Most Popular
+        </div>
+      )}
+      
+      {isSubscribed && (
+        <div className="absolute top-0 right-0 bg-green-500 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
+          ✓ Subscribed
         </div>
       )}
 
@@ -51,22 +61,33 @@ export function GymPlanCard({
           ))}
         </ul>
 
-        {/* Select Button */}
-        <button
-          onClick={onSelect}
-          disabled={isLoading}
-          className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300 ${
-            isPopular
-              ? 'bg-orange-500 hover:bg-orange-600 text-white'
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-          } ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
-          }`}
-        >
-          {isLoading ? 'Processing...' : 'Select This Plan'}
-        </button>
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <button
+            onClick={onSelect}
+            disabled={isLoading || isSubscribed}
+            className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300 ${
+              isSubscribed
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : isPopular
+                ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+            } ${isLoading ? 'opacity-50 cursor-not-allowed' : !isSubscribed && 'hover:shadow-lg'}`}
+          >
+            {isLoading ? 'Processing...' : isSubscribed ? '✓ Already Subscribed' : 'Select This Plan'}
+          </button>
+          
+          {isSubscribed && onCancel && (
+            <button
+              onClick={onCancel}
+              disabled={isLoading}
+              className="w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300"
+            >
+              Cancel Subscription
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-

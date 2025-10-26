@@ -42,6 +42,20 @@ export default function SubscriptionsPage() {
     try {
       setLoadingStates((prev) => ({ ...prev, [key]: true }));
 
+      // Network mismatch warning
+      if (chainId && chainId !== validChainId) {
+        alert(
+          `⚠️ Network Mismatch Detected!\n\n` +
+            `Your wallet is connected to chain ID: ${chainId}\n` +
+            `But the app is using chain ID: ${validChainId}\n\n` +
+            `Please switch your wallet to the correct network:\n` +
+            `• Localhost (31337) for local development\n` +
+            `• Arbitrum Sepolia (421614) for testnet\n` +
+            `• Arbitrum One (42161) for mainnet`
+        );
+        return;
+      }
+
       // Check balance before subscribing
       if (!balance || balance < amount) {
         alert(
@@ -78,6 +92,20 @@ export default function SubscriptionsPage() {
     const key = `${planId}-yearly`;
     try {
       setLoadingStates((prev) => ({ ...prev, [key]: true }));
+
+      // Network mismatch warning
+      if (chainId && chainId !== validChainId) {
+        alert(
+          `⚠️ Network Mismatch Detected!\n\n` +
+            `Your wallet is connected to chain ID: ${chainId}\n` +
+            `But the app is using chain ID: ${validChainId}\n\n` +
+            `Please switch your wallet to the correct network:\n` +
+            `• Localhost (31337) for local development\n` +
+            `• Arbitrum Sepolia (421614) for testnet\n` +
+            `• Arbitrum One (42161) for mainnet`
+        );
+        return;
+      }
 
       // Check balance before subscribing
       if (!balance || balance < amount) {
