@@ -10,33 +10,33 @@ import { PoweredByBadge } from '@/components/demo/PoweredByBadge';
 import { useSubscriptionManager, usePyUSDBalance } from '@/hooks/useSubscriptionManager';
 import type { NetworkId } from '@/lib/contracts';
 
-// 定義會員計劃
+// Define membership plans
 const GYM_PLANS = [
   {
     id: 'basic',
     name: 'Basic',
     price: '29',
-    period: '月',
+    period: 'month',
     features: [
-      '無限次使用健身房',
-      '基礎器材訓練',
-      '淋浴間使用',
-      '週一至週五 6AM-10PM',
-      '免費 WiFi',
+      'Unlimited gym access',
+      'Basic equipment training',
+      'Shower facilities',
+      'Mon-Fri 6AM-10PM',
+      'Free WiFi',
     ],
   },
   {
     id: 'premium',
     name: 'Premium',
     price: '49',
-    period: '月',
+    period: 'month',
     features: [
-      'Basic 所有功能',
-      '團體課程（瑜伽、飛輪、有氧）',
-      '每月 2 次私人教練課程',
-      '全天候 24/7 開放',
-      '免費停車',
-      '蛋白質飲品折扣',
+      'All Basic features',
+      'Group classes (Yoga, Spin, Cardio)',
+      '2 personal training sessions/month',
+      '24/7 access',
+      'Free parking',
+      'Protein shake discounts',
     ],
     isPopular: true,
   },
@@ -44,15 +44,15 @@ const GYM_PLANS = [
     id: 'vip',
     name: 'VIP',
     price: '99',
-    period: '月',
+    period: 'month',
     features: [
-      'Premium 所有功能',
-      '無限私人教練課程',
-      '專屬 VIP 訓練區',
-      '營養師諮詢',
-      '按摩服務',
-      '免費運動服裝租借',
-      '專屬停車位',
+      'All Premium features',
+      'Unlimited personal training',
+      'Exclusive VIP training area',
+      'Nutritionist consultation',
+      'Massage services',
+      'Free workout gear rental',
+      'Reserved parking spot',
     ],
   },
 ];
@@ -73,7 +73,7 @@ export default function GymPaymentPage() {
 
   const handleSelectPlan = (planId: string) => {
     if (!address) {
-      alert('請先連接錢包！');
+      alert('Please connect your wallet first!');
       return;
     }
     setSelectedPlanId(planId);
@@ -90,7 +90,7 @@ export default function GymPaymentPage() {
       // Check balance
       if (!balance || balance < amount) {
         alert(
-          `餘額不足！您需要 ${selectedPlan.price} PYUSD，但只有 ${balance ? (Number(balance) / 1e6).toFixed(2) : '0'} PYUSD。`
+          `Insufficient balance! You need ${selectedPlan.price} PYUSD, but only have ${balance ? (Number(balance) / 1e6).toFixed(2) : '0'} PYUSD.`
         );
         return;
       }
@@ -103,12 +103,12 @@ export default function GymPaymentPage() {
       console.log('Subscribing to plan...');
       await subscribeMonthly(0n, false);
 
-      alert('訂閱成功！歡迎加入 FitLife Gym！');
+      alert('Subscription successful! Welcome to FitLife Gym!');
       setIsModalOpen(false);
       setSelectedPlanId(null);
     } catch (error: any) {
       console.error('Payment error:', error);
-      alert(`付款失敗：${error.message || '未知錯誤'}`);
+      alert(`Payment failed: ${error.message || 'Unknown error'}`);
     } finally {
       setIsProcessing(false);
     }
@@ -123,24 +123,24 @@ export default function GymPaymentPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-5xl font-bold mb-6">
-              開始您的健身之旅
+              Start Your Fitness Journey
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              選擇最適合您的會員計劃，立即開始訓練。
-              所有計劃都包含專業教練指導和最先進的健身設備。
+              Choose the membership plan that fits you best and start training today.
+              All plans include professional coaching and state-of-the-art equipment.
             </p>
             <div className="flex items-center justify-center space-x-8 text-sm">
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">🏋️</span>
-                <span>專業器材</span>
+                <span>Professional Equipment</span>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">👨‍🏫</span>
-                <span>專業教練</span>
+                <span>Expert Trainers</span>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">🎯</span>
-                <span>個人化訓練</span>
+                <span>Personalized Training</span>
               </div>
             </div>
           </div>
@@ -152,10 +152,10 @@ export default function GymPaymentPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">
-              選擇您的會員計劃
+              Choose Your Membership Plan
             </h3>
             <p className="text-gray-600">
-              所有計劃都支援使用 PyUSD 安全付款
+              All plans support secure payment with PyUSD
             </p>
           </div>
           {/* Plan Cards Grid */}
