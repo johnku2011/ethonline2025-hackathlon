@@ -18,16 +18,16 @@ export function GymHeader() {
           </div>
           <div className="hidden md:flex items-center space-x-6 text-sm">
             <a href="#" className="hover:text-orange-100 transition">
-              關於我們
+              About Us
             </a>
             <a href="#" className="hover:text-orange-100 transition">
-              課程
+              Classes
             </a>
             <a href="#" className="hover:text-orange-100 transition">
-              設施
+              Facilities
             </a>
             <a href="#" className="hover:text-orange-100 transition">
-              聯絡我們
+              Contact
             </a>
           </div>
         </div>
