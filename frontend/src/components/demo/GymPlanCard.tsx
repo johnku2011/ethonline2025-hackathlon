@@ -59,9 +59,7 @@ export function GymPlanCard({
             isPopular
               ? 'bg-orange-500 hover:bg-orange-600 text-white'
               : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-          } ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
-          }`}
+          } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}`}
         >
           {isLoading ? 'Processing...' : 'Select This Plan'}
         </button>
@@ -69,4 +67,3 @@ export function GymPlanCard({
     </div>
   );
 }
-

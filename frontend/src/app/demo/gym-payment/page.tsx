@@ -7,7 +7,11 @@ import { GymHeader } from '@/components/demo/GymHeader';
 import { GymPlanCard } from '@/components/demo/GymPlanCard';
 import { PaymentModal } from '@/components/demo/PaymentModal';
 import { PoweredByBadge } from '@/components/demo/PoweredByBadge';
-import { useSubscriptionManager, usePyUSDBalance, useAllPlans } from '@/hooks/useSubscriptionManager';
+import {
+  useSubscriptionManager,
+  usePyUSDBalance,
+  useAllPlans,
+} from '@/hooks/useSubscriptionManager';
 import type { NetworkId } from '@/lib/contracts';
 
 export default function GymPaymentPage() {
@@ -19,13 +23,15 @@ export default function GymPaymentPage() {
   const chainId = useChainId();
   const validChainId = (chainId || 31337) as NetworkId;
 
-  const { approvePyUSD, subscribeMonthly, mintPyUSD } = useSubscriptionManager(validChainId);
+  const { approvePyUSD, subscribeMonthly, mintPyUSD } =
+    useSubscriptionManager(validChainId);
   const { data: balance } = usePyUSDBalance(validChainId, address);
   const { plans, isLoading: isLoadingPlans } = useAllPlans(validChainId);
 
   // Find the Gym Membership plan specifically (Plan ID 5 in demo data)
   // Fallback to first plan if Gym Membership not found
-  const recommendedPlan = plans.find(plan => plan.name === 'Gym Membership') || plans[0] || null;
+  const recommendedPlan =
+    plans.find((plan) => plan.name === 'Gym Membership') || plans[0] || null;
 
   const handleSelectPlan = () => {
     if (!address) {
@@ -49,10 +55,13 @@ export default function GymPaymentPage() {
       // Mint 1000 PyUSD for testing
       const amount = BigInt(1000 * 1e6); // PyUSD has 6 decimals
       await mintPyUSD(address, amount);
-      alert('Successfully minted 1000 PyUSD! Please wait a few seconds for the balance to update.');
+      alert(
+        'Successfully minted 1000 PyUSD! Please wait a few seconds for the balance to update.'
+      );
     } catch (error: any) {
       console.error('Mint error:', error);
-      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      const errorMessage =
+        error?.message || error?.toString() || 'Unknown error';
       alert(`Failed to mint PyUSD: ${errorMessage}`);
     } finally {
       setIsMinting(false);
@@ -72,15 +81,18 @@ export default function GymPaymentPage() {
         const currentBalance = balance ? formatUnits(balance, 6) : '0';
         alert(
           `❌ Insufficient PyUSD Balance!\n\n` +
-          `You need: ${priceInPyUSD} PYUSD\n` +
-          `You have: ${currentBalance} PYUSD\n\n` +
-          `💡 Click the "Get 1000 Test PyUSD" button above to mint test tokens!`
+            `You need: ${priceInPyUSD} PYUSD\n` +
+            `You have: ${currentBalance} PYUSD\n\n` +
+            `💡 Click the "Get 1000 Test PyUSD" button above to mint test tokens!`
         );
         setIsProcessing(false);
         return;
       }
 
-      console.log('Subscribe Monthly - Plan ID:', recommendedPlan.planId.toString());
+      console.log(
+        'Subscribe Monthly - Plan ID:',
+        recommendedPlan.planId.toString()
+      );
       console.log('Plan Name:', recommendedPlan.name);
       console.log('Amount needed:', priceInPyUSD, 'PYUSD');
       console.log('Current balance:', formatUnits(balance, 6), 'PYUSD');
@@ -99,26 +111,31 @@ export default function GymPaymentPage() {
       setIsModalOpen(false);
     } catch (error: any) {
       console.error('Payment error:', error);
-      
+
       // Parse error message
       let errorMessage = error?.message || error?.toString() || 'Unknown error';
-      
+
       // Provide helpful error messages
-      if (errorMessage.includes('User rejected') || errorMessage.includes('User denied')) {
-        alert('❌ Transaction Rejected\n\nYou rejected the transaction in your wallet.');
+      if (
+        errorMessage.includes('User rejected') ||
+        errorMessage.includes('User denied')
+      ) {
+        alert(
+          '❌ Transaction Rejected\n\nYou rejected the transaction in your wallet.'
+        );
       } else if (errorMessage.includes('insufficient funds')) {
         alert(
           '❌ Insufficient Funds\n\n' +
-          'You don\'t have enough ETH to pay for gas fees.\n\n' +
-          '💡 Please add some ETH to your wallet and try again.'
+            "You don't have enough ETH to pay for gas fees.\n\n" +
+            '💡 Please add some ETH to your wallet and try again.'
         );
       } else {
         alert(
           `❌ Payment Failed\n\n${errorMessage}\n\n` +
-          `Please check:\n` +
-          `1. You have enough PyUSD balance (${priceInPyUSD} PYUSD needed)\n` +
-          `2. You have enough ETH for gas fees\n` +
-          `3. You didn't reject the transaction in your wallet`
+            `Please check:\n` +
+            `1. You have enough PyUSD balance (${priceInPyUSD} PYUSD needed)\n` +
+            `2. You have enough ETH for gas fees\n` +
+            `3. You didn't reject the transaction in your wallet`
         );
       }
     } finally {
@@ -138,8 +155,9 @@ export default function GymPaymentPage() {
               Start Your Fitness Journey
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Choose the membership plan that fits you best and start training today.
-              All plans include professional coaching and state-of-the-art equipment.
+              Choose the membership plan that fits you best and start training
+              today. All plans include professional coaching and
+              state-of-the-art equipment.
             </p>
 
             {/* PyUSD Balance Card - Only show when wallet is connected */}
@@ -148,9 +166,12 @@ export default function GymPaymentPage() {
                 <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 shadow-2xl">
                   <div className="flex items-center justify-center space-x-4">
                     <div className="text-left">
-                      <p className="text-sm text-orange-100 mb-1">Your Test PyUSD Balance</p>
+                      <p className="text-sm text-orange-100 mb-1">
+                        Your Test PyUSD Balance
+                      </p>
                       <p className="text-3xl font-bold">
-                        {balance ? (Number(balance) / 1e6).toFixed(2) : '0.00'} PYUSD
+                        {balance ? (Number(balance) / 1e6).toFixed(2) : '0.00'}{' '}
+                        PYUSD
                       </p>
                     </div>
                     <button
@@ -162,7 +183,8 @@ export default function GymPaymentPage() {
                     </button>
                   </div>
                   <p className="text-xs text-orange-100 mt-3 text-center">
-                    💡 Need PyUSD for testing? Click the button to mint 1000 test tokens!
+                    💡 Need PyUSD for testing? Click the button to mint 1000
+                    test tokens!
                   </p>
                 </div>
               </div>
@@ -210,7 +232,8 @@ export default function GymPaymentPage() {
           {!isLoadingPlans && !recommendedPlan && (
             <div className="text-center py-12 bg-gray-100 rounded-xl">
               <p className="text-gray-600 text-lg">
-                No subscription plan available at the moment. Please try again later.
+                No subscription plan available at the moment. Please try again
+                later.
               </p>
             </div>
           )}
@@ -260,4 +283,3 @@ export default function GymPaymentPage() {
     </div>
   );
 }
-

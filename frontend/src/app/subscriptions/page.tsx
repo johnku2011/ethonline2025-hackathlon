@@ -15,10 +15,6 @@ export default function SubscriptionsPage() {
   const { address, chainId } = useAccount();
   // Note: enableAutoPay is now default true in Lab version, removed UI control
   const [stakeYearly, setStakeYearly] = useState(false);
-  // Track loading state for each button independently
-  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>(
-    {}
-  );
 
   const validChainId = (
     chainId === 31337 || chainId === 421614 || chainId === 42161
@@ -38,78 +34,38 @@ export default function SubscriptionsPage() {
   const { data: balance } = usePyUSDBalance(validChainId, address);
 
   const handleSubscribeMonthly = async (planId: bigint, amount: bigint) => {
-    const key = `${planId}-monthly`;
     try {
-      setLoadingStates((prev) => ({ ...prev, [key]: true }));
-
       // Check balance before subscribing
       if (!balance || balance < amount) {
-        alert(
-          `Insufficient PyUSD balance. You have ${formatUnits(balance || BigInt(0), 6)} PYUSD but need ${formatUnits(amount, 6)} PYUSD. Please mint more PyUSD first.`
-        );
+        alert('Insufficient PyUSD balance. Please mint PyUSD first.');
         return;
       }
 
-      console.log('Subscribe Monthly - Plan ID:', planId);
-      console.log('Amount needed:', formatUnits(amount, 6), 'PYUSD');
-      console.log('Stake yearly:', stakeYearly);
-
       // First approve PyUSD spending
-      console.log('Approving PyUSD spending...');
       await approvePyUSD(amount);
-
-      console.log('Approval successful, subscribing...');
       // Then subscribe (auto-pay is default enabled)
       await subscribeMonthly(planId, stakeYearly);
-
-      console.log('Subscription successful!');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Subscription error:', error);
-      const errorMessage =
-        error?.message || error?.toString() || 'Unknown error';
-      alert(
-        `Subscription failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
-      );
-    } finally {
-      setLoadingStates((prev) => ({ ...prev, [key]: false }));
+      alert('Subscription failed. Please try again.');
     }
   };
 
   const handleSubscribeYearly = async (planId: bigint, amount: bigint) => {
-    const key = `${planId}-yearly`;
     try {
-      setLoadingStates((prev) => ({ ...prev, [key]: true }));
-
       // Check balance before subscribing
       if (!balance || balance < amount) {
-        alert(
-          `Insufficient PyUSD balance. You have ${formatUnits(balance || BigInt(0), 6)} PYUSD but need ${formatUnits(amount, 6)} PYUSD. Please mint more PyUSD first.`
-        );
+        alert('Insufficient PyUSD balance. Please mint PyUSD first.');
         return;
       }
 
-      console.log('Subscribe Yearly - Plan ID:', planId);
-      console.log('Amount needed:', formatUnits(amount, 6), 'PYUSD');
-      console.log('Your balance:', formatUnits(balance, 6), 'PYUSD');
-
       // First approve PyUSD spending
-      console.log('Approving PyUSD spending...');
       await approvePyUSD(amount);
-
-      console.log('Approval successful, subscribing...');
-      // Then subscribe (no ETH value should be sent)
+      // Then subscribe
       await subscribeYearly(planId);
-
-      console.log('Subscription successful!');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Subscription error:', error);
-      const errorMessage =
-        error?.message || error?.toString() || 'Unknown error';
-      alert(
-        `Subscription failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
-      );
-    } finally {
-      setLoadingStates((prev) => ({ ...prev, [key]: false }));
+      alert('Subscription failed. Please try again.');
     }
   };
 
@@ -252,12 +208,7 @@ export default function SubscriptionsPage() {
                   onSubscribeYearly={() =>
                     handleSubscribeYearly(plan.planId, plan.yearlyRate)
                   }
-                  isMonthlyPending={
-                    loadingStates[`${plan.planId}-monthly`] || false
-                  }
-                  isYearlyPending={
-                    loadingStates[`${plan.planId}-yearly`] || false
-                  }
+                  isPending={isPending}
                 />
               ))}
             </div>
