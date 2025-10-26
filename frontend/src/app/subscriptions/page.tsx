@@ -44,17 +44,32 @@ export default function SubscriptionsPage() {
 
       // Check balance before subscribing
       if (!balance || balance < amount) {
-        alert('Insufficient PyUSD balance. Please mint PyUSD first.');
+        alert(
+          `Insufficient PyUSD balance. You have ${formatUnits(balance || BigInt(0), 6)} PYUSD but need ${formatUnits(amount, 6)} PYUSD. Please mint more PyUSD first.`
+        );
         return;
       }
 
+      console.log('Subscribe Monthly - Plan ID:', planId);
+      console.log('Amount needed:', formatUnits(amount, 6), 'PYUSD');
+      console.log('Stake yearly:', stakeYearly);
+
       // First approve PyUSD spending
+      console.log('Approving PyUSD spending...');
       await approvePyUSD(amount);
+
+      console.log('Approval successful, subscribing...');
       // Then subscribe (auto-pay is default enabled)
       await subscribeMonthly(planId, stakeYearly);
-    } catch (error) {
+
+      console.log('Subscription successful!');
+    } catch (error: any) {
       console.error('Subscription error:', error);
-      alert('Subscription failed. Please try again.');
+      const errorMessage =
+        error?.message || error?.toString() || 'Unknown error';
+      alert(
+        `Subscription failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
+      );
     } finally {
       setLoadingStates((prev) => ({ ...prev, [key]: false }));
     }
@@ -67,19 +82,32 @@ export default function SubscriptionsPage() {
 
       // Check balance before subscribing
       if (!balance || balance < amount) {
-        alert('Insufficient PyUSD balance. Please mint PyUSD first.');
+        alert(
+          `Insufficient PyUSD balance. You have ${formatUnits(balance || BigInt(0), 6)} PYUSD but need ${formatUnits(amount, 6)} PYUSD. Please mint more PyUSD first.`
+        );
         return;
       }
 
-      console.log('Subscribe Yearly - Plan ID:', planId, 'Amount:', amount);
+      console.log('Subscribe Yearly - Plan ID:', planId);
+      console.log('Amount needed:', formatUnits(amount, 6), 'PYUSD');
+      console.log('Your balance:', formatUnits(balance, 6), 'PYUSD');
 
       // First approve PyUSD spending
+      console.log('Approving PyUSD spending...');
       await approvePyUSD(amount);
-      // Then subscribe
+
+      console.log('Approval successful, subscribing...');
+      // Then subscribe (no ETH value should be sent)
       await subscribeYearly(planId);
-    } catch (error) {
+
+      console.log('Subscription successful!');
+    } catch (error: any) {
       console.error('Subscription error:', error);
-      alert('Subscription failed. Please try again.');
+      const errorMessage =
+        error?.message || error?.toString() || 'Unknown error';
+      alert(
+        `Subscription failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
+      );
     } finally {
       setLoadingStates((prev) => ({ ...prev, [key]: false }));
     }
