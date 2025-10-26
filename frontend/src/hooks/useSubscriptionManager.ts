@@ -33,7 +33,6 @@ export function useSubscriptionManager(chainId: NetworkId) {
       abi: PYUSD_ABI,
       functionName: 'approve',
       args: [subscriptionManagerAddress, amount],
-      value: 0n,
     });
   };
 
@@ -48,7 +47,6 @@ export function useSubscriptionManager(chainId: NetworkId) {
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'subscribeMonthly',
       args: [planId, stakeYearlyAmount],
-      value: 0n,
     });
   };
 
@@ -59,7 +57,6 @@ export function useSubscriptionManager(chainId: NetworkId) {
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'subscribeYearly',
       args: [planId],
-      value: 0n,
     });
   };
 
@@ -70,7 +67,6 @@ export function useSubscriptionManager(chainId: NetworkId) {
       abi: SUBSCRIPTION_MANAGER_ABI,
       functionName: 'cancelSubscription',
       args: [planId],
-      value: 0n,
     });
   };
 
@@ -81,7 +77,6 @@ export function useSubscriptionManager(chainId: NetworkId) {
       abi: PYUSD_ABI,
       functionName: 'mint',
       args: [to, amount],
-      value: 0n,
     });
   };
 
