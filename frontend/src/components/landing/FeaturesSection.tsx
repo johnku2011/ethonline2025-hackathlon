@@ -1,45 +1,45 @@
 export function FeaturesSection() {
   const features = [
     {
-      icon: '💸',
-      title: 'Earn While Subscribed',
+      icon: '🪙',
+      title: 'PyUSD Holding Rewards',
       description:
-        'Your subscription payment earns 4.5% APY through PyUSD. Complete the year and the rewards are yours.',
+        'Earn at least 4% APY automatically from PayPal USD while your subscription runs. Stable collateral, no volatility.',
       color: 'from-blue-500 to-blue-600',
     },
     {
-      icon: '🔒',
-      title: '100% Principal Back',
+      icon: '🧠',
+      title: 'Morpho Vault Optimization',
       description:
-        'Cancel anytime and get your full subscription amount back. You only forfeit the interest rewards.',
-      color: 'from-green-500 to-green-600',
-    },
-    {
-      icon: '🏪',
-      title: 'Multi-Provider Platform',
-      description:
-        'Any business can register and offer subscriptions. Browse from multiple providers in one place.',
+        'Funds route through Morpho vaults to amplify returns via decentralized lending markets without sacrificing self-custody.',
       color: 'from-purple-500 to-purple-600',
     },
     {
-      icon: '⚡',
-      title: 'Built on Arbitrum',
+      icon: '🤝',
+      title: 'Loyalty Incentives',
       description:
-        'Fast and cheap transactions on Layer 2. No need to worry about high gas fees.',
+        'Complete a plan to claim the accrued interest, or cancel early and let your provider keep the yield as a churn deterrent.',
+      color: 'from-green-500 to-green-600',
+    },
+    {
+      icon: '🏢',
+      title: 'Provider Growth Suite',
+      description:
+        'Onboard with a business profile, set pricing, and track earnings from a dedicated dashboard built for subscription teams.',
       color: 'from-orange-500 to-orange-600',
     },
     {
-      icon: '🔐',
-      title: 'Smart Contract Security',
+      icon: '�',
+      title: 'Curated Marketplace',
       description:
-        'Your funds are secured by audited smart contracts. Transparent and trustless by design.',
+        'Browse multi-provider offers—from streaming to SaaS—inside a single marketplace with WalletConnect and RainbowKit flows.',
       color: 'from-red-500 to-red-600',
     },
     {
-      icon: '💰',
-      title: 'Powered by PyUSD',
+      icon: '🎮',
+      title: 'Guided Sandbox Demo',
       description:
-        'Use PayPal USD stablecoin for stability and natural interest accrual. No volatility risk.',
+        'Test the experience risk-free on Arbitrum Sepolia with auto-provisioned wallets, preloaded providers, and time-warp controls.',
       color: 'from-cyan-500 to-cyan-600',
     },
   ];
@@ -50,10 +50,10 @@ export function FeaturesSection() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            Why Choose Us?
+            Why Pay2Earn?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            A revolutionary subscription model that benefits everyone
+            A DeFi-native subscription model designed for users, providers, and builders
           </p>
         </div>
 

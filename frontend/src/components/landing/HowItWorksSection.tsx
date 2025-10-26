@@ -4,21 +4,21 @@ export function HowItWorksSection() {
       number: '01',
       title: 'Subscribe with PyUSD',
       description:
-        'Choose a service and pay for a yearly subscription using PyUSD. Your funds are securely held in a smart contract.',
+        'Pick a provider, confirm a yearly plan, and deposit once in PayPal’s PyUSD stablecoin. Funds settle on Arbitrum in seconds.',
       icon: '💰',
     },
     {
       number: '02',
-      title: 'Interest Accrues Automatically',
+      title: 'Yield Grows in Morpho',
       description:
-        'PyUSD naturally earns interest. We calculate 4.5% APY on your subscription amount throughout the year.',
+        'Your subscription is staked into Morpho vaults, stacking PyUSD’s native 4% APY with boosted DeFi lending rewards—all transparent on-chain.',
       icon: '📈',
     },
     {
       number: '03',
-      title: 'Complete Year = Earn Rewards',
+      title: 'Loyalty Releases Rewards',
       description:
-        'After 1 year, claim your full subscription amount back PLUS the 4.5% interest. Cancel early? Get your principal back, but forfeit the interest.',
+        'Complete the 12-month period and reclaim your principal plus accumulated interest. Cancel early and your principal returns instantly, while the yield flows to the provider as a loyalty bonus.',
       icon: '🎉',
     },
   ];
@@ -32,7 +32,7 @@ export function HowItWorksSection() {
             How It Works
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Three simple steps to start earning rewards on your subscriptions
+            Three simple steps to transform subscription spend into on-chain rewards
           </p>
         </div>
 
@@ -72,7 +72,7 @@ export function HowItWorksSection() {
         {/* Example Calculation */}
         <div className="mt-16 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border-2 border-blue-200">
           <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-            💡 Example: Spotify Premium Subscription
+            💡 Example: Sandbox Demo Subscription
           </h3>
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="bg-white rounded-xl p-6 shadow-md">
@@ -89,13 +89,13 @@ export function HowItWorksSection() {
             </div>
             <div className="bg-white rounded-xl p-6 shadow-md border-2 border-green-500">
               <div className="text-lg font-semibold text-gray-900 mb-2">
-                Our Model (Complete Year)
+                Pay2Earn (Complete Year)
               </div>
               <div className="space-y-2 text-gray-600">
                 <div>Pay: $120/year</div>
-                <div>Get back: $120 + $5.40</div>
+                <div>Get back: $120 + $4.80 (PyUSD) + $2.40 (Morpho boost)</div>
                 <div className="pt-2 border-t border-gray-200 font-bold text-green-600">
-                  Total Cost: -$114.60 🎉
+                  Total Cost: -$112.80 🎉
                 </div>
               </div>
             </div>

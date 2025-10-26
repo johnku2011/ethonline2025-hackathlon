@@ -8,13 +8,14 @@ export function CTASection() {
         <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl p-12 text-center text-white shadow-2xl">
           {/* Heading */}
           <h2 className="text-4xl sm:text-5xl font-bold mb-6">
-            Ready to Get Started?
+            Experience Pay2Earn Today
           </h2>
 
           {/* Description */}
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Try our sandbox demo or connect your wallet to start earning rewards
-            on your subscriptions today.
+            Jump into the Arbitrum Sepolia sandbox for a guided trial or connect
+            your wallet to launch real subscription programs with PyUSD-backed
+            yields.
           </p>
 
           {/* Buttons */}
@@ -41,8 +42,8 @@ export function CTASection() {
           {/* Additional Info */}
           <div className="mt-8 pt-8 border-t border-white/20">
             <p className="text-sm text-blue-100">
-              Built for ETHGlobal Hackathon • Open Source • Audited Smart
-              Contracts
+              Built for ETHGlobal Hackathon 2025 • Powered by PyUSD & Morpho •
+              Seamless RainbowKit Integration
             </p>
           </div>
         </div>

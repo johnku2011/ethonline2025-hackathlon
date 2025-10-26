@@ -14,7 +14,7 @@ export function Navbar() {
               <span className="text-white font-bold text-xl">P</span>
             </div>
             <span className="font-bold text-xl text-gray-900">
-              PyUSD Subscriptions
+              Pay2Earn
             </span>
           </Link>
 
