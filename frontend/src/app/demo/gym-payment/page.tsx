@@ -21,7 +21,14 @@ export default function GymPaymentPage() {
 
   const { address } = useAccount();
   const chainId = useChainId();
-  const validChainId = (chainId || 31337) as NetworkId;
+
+  // Network validation: Ensure chainId is one of the supported networks
+  // If chainId is undefined or not supported, default to localhost for development
+  const validChainId = (
+    chainId === 31337 || chainId === 421614 || chainId === 42161
+      ? chainId
+      : 31337
+  ) as NetworkId;
 
   const { approvePyUSD, subscribeMonthly, mintPyUSD } =
     useSubscriptionManager(validChainId);
@@ -75,6 +82,21 @@ export default function GymPaymentPage() {
       setIsProcessing(true);
       const amount = recommendedPlan.monthlyRate;
       const priceInPyUSD = formatUnits(amount, 6);
+
+      // Network mismatch warning
+      if (chainId && chainId !== validChainId) {
+        alert(
+          `⚠️ Network Mismatch Detected!\n\n` +
+            `Your wallet is connected to chain ID: ${chainId}\n` +
+            `But the app is using chain ID: ${validChainId}\n\n` +
+            `Please switch your wallet to the correct network:\n` +
+            `• Localhost (31337) for local development\n` +
+            `• Arbitrum Sepolia (421614) for testnet\n` +
+            `• Arbitrum One (42161) for mainnet`
+        );
+        setIsProcessing(false);
+        return;
+      }
 
       // Check PyUSD balance
       if (!balance || balance < amount) {
@@ -130,10 +152,11 @@ export default function GymPaymentPage() {
             '💡 Please add some ETH to your wallet and try again.'
         );
       } else {
+        const priceNeeded = formatUnits(recommendedPlan.monthlyRate, 6);
         alert(
           `❌ Payment Failed\n\n${errorMessage}\n\n` +
             `Please check:\n` +
-            `1. You have enough PyUSD balance (${priceInPyUSD} PYUSD needed)\n` +
+            `1. You have enough PyUSD balance (${priceNeeded} PYUSD needed)\n` +
             `2. You have enough ETH for gas fees\n` +
             `3. You didn't reject the transaction in your wallet`
         );
