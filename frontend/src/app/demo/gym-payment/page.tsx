@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useChainId, usePublicClient } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { parseUnits } from 'viem';
 import { GymHeader } from '@/components/demo/GymHeader';
 import { GymPlanCard } from '@/components/demo/GymPlanCard';
@@ -65,7 +65,6 @@ export default function GymPaymentPage() {
   const { address } = useAccount();
   const chainId = useChainId();
   const validChainId = (chainId || 31337) as NetworkId;
-  const publicClient = usePublicClient();
 
   const { approvePyUSD, subscribeMonthly } = useSubscriptionManager(validChainId);
   const { data: balance } = usePyUSDBalance(validChainId, address);
@@ -82,7 +81,7 @@ export default function GymPaymentPage() {
   };
 
   const handleConfirmPayment = async () => {
-    if (!selectedPlan || !publicClient) return;
+    if (!selectedPlan) return;
 
     try {
       setIsProcessing(true);
@@ -96,32 +95,28 @@ export default function GymPaymentPage() {
         return;
       }
 
-      // Step 1: Approve PyUSD
-      console.log('Step 1: Approving PyUSD...');
-      const approveHash = await approvePyUSD(amount);
-      console.log('Approve transaction sent:', approveHash);
+      console.log('Subscribe Monthly - Plan ID: 1');
+      console.log('Amount needed:', selectedPlan.price, 'PYUSD');
 
-      // Step 2: Wait for approve transaction confirmation
-      console.log('Step 2: Waiting for approve confirmation...');
-      await publicClient.waitForTransactionReceipt({ hash: approveHash });
-      console.log('Approve transaction confirmed!');
+      // First approve PyUSD spending
+      console.log('Approving PyUSD spending...');
+      await approvePyUSD(amount);
 
-      // Step 3: Subscribe to plan (plan IDs start from 1 in contract)
-      console.log('Step 3: Subscribing to plan...');
-      const subscribeHash = await subscribeMonthly(1n, false);
-      console.log('Subscribe transaction sent:', subscribeHash);
+      console.log('Approval successful, subscribing...');
+      // Then subscribe (plan IDs start from 1 in contract)
+      await subscribeMonthly(1n, false);
 
-      // Step 4: Wait for subscribe transaction confirmation
-      console.log('Step 4: Waiting for subscribe confirmation...');
-      await publicClient.waitForTransactionReceipt({ hash: subscribeHash });
-      console.log('Subscribe transaction confirmed!');
-
+      console.log('Subscription successful!');
       alert('Subscription successful! Welcome to FitLife Gym!');
       setIsModalOpen(false);
       setSelectedPlanId(null);
     } catch (error: any) {
       console.error('Payment error:', error);
-      alert(`Payment failed: ${error.message || 'Unknown error'}`);
+      const errorMessage =
+        error?.message || error?.toString() || 'Unknown error';
+      alert(
+        `Payment failed: ${errorMessage}\n\nPlease check:\n1. You have enough PyUSD balance\n2. You have enough ETH for gas fees\n3. The transaction was not rejected`
+      );
     } finally {
       setIsProcessing(false);
     }
